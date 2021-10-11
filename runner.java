@@ -23,10 +23,12 @@ public class runner extends JPanel {
     int playerSize = 10;
     int playerX = 100;
     int playerY = 150;
-    int rayLength = 50;
+    int rayLength = 100;
     double clockSpeed = 100;
     double clock = 0;
     Point playerMove;
+    int direction = 0;
+    double error = 0.0;
 
     double[][] x = new double[5][1];
     double[][] w1 = new double[3][5];
@@ -50,7 +52,8 @@ public class runner extends JPanel {
                          {0.0}
                         };
         double[][] answer = calculateMatrices(in);
-        Point[] result = getRay(rays.values()[calculateOut(answer)]);
+        Point[] result = getRay(calculateOut(answer));
+        System.out.println(error);
         playerMove = result[1];
     }
 
@@ -101,6 +104,10 @@ public class runner extends JPanel {
         x = input;
         hidden = a1();
         out = result = a2();
+        for (int i = 0; i < a2().length; i++) {
+            error += Math.pow((a2()[i][0] - getAnswer()[i]), 2);
+        }
+        error /= a2().length;
         return result;
     }
 
@@ -118,6 +125,41 @@ public class runner extends JPanel {
                 }
                 oldValue = value;
             }
+        }
+        return result;
+    }
+
+    public double[] getInputs() {
+        return getDirection();
+    }
+
+    public double[] getAnswer() {
+        double[] result = new double[out.length];
+        int index = 0;
+        double[] values = getDirection();
+        double old = 0.0;
+        int i = 0;
+        for (double value : values) {
+            if (value > old) {
+                index = i;
+            }
+            old = value;
+            i++;
+        }
+        int j = 0;
+        for (double value : result) {
+            if (j == index) {
+                result[j] = 1;
+            }
+            j++;
+        }
+        return result;
+    }
+
+    public double[] getDirection() {
+        double[] result = new double[5];
+        for (int i = -2; i < 2; i++) {
+            result[i + 2] = getColissionDistance(i);
         }
         return result;
     }
@@ -154,9 +196,12 @@ public class runner extends JPanel {
         topRight,
         topLeft,
         top,
+        bottomRight,
+        bottomLeft,
+        bottom,
     }
     
-    public graphics() {
+    public runner() {
         addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 points.add(new Point(e.getX(), e.getY()));
@@ -184,10 +229,6 @@ public class runner extends JPanel {
             g2.fillPolygon(polygonX, polygonY, polygonX.length);
             //g2.drawRect(playerX, playerX, playerSize, playerSize);
             g2.fillRect(playerX, playerY, playerSize, playerSize);
-        }
-        if (clock == 10000) {
-            Point p = getColission(rays.top);
-            System.out.println("Colission: " + p.x + " : " + p.y);
         }
         clock++;
         repaint(0, 0, getWidth(), getHeight());
@@ -249,28 +290,48 @@ public class runner extends JPanel {
         repaint(0, 0, getWidth(), getHeight());
     }
 
-    public Point[] getRay(rays r) {
+    public Point[] getRay(int d) {
         Point[] point = new Point[2];
-        switch(r) {
-            case middleRight:
-                point[0] = new Point(playerX, playerY + playerSize/2);
-                point[1] = new Point(1, 0);
-                return point;
-            case middleLeft:
+        switch(d) {
+            case 2:
                 point[0] = new Point(playerX + playerSize, playerY + playerSize/2);
+                point[1] = new Point(1, 0);
+                direction = 2;
+                return point;
+            case 6:
+                point[0] = new Point(playerX, playerY + playerSize/2);
                 point[1] = new Point(-1, 0);
+                direction = 6;
                 return point;
-            case topRight:
-                point[0] = new Point(playerX, playerY);
-                point[1] = new Point(1, -1);
-                return point;
-            case topLeft:
+            case 1:
                 point[0] = new Point(playerX + playerSize, playerY);
-                point[1] = new Point(-1, -1);
+                point[1] = new Point(1, -1);
+                direction = 1;
                 return point;
-            case top:
+            case 7:
+                point[0] = new Point(playerX, playerY);
+                point[1] = new Point(-1, -1);
+                direction = 7;
+                return point;
+            case 0:
                 point[0] = new Point(playerX + playerSize/2, playerY);
                 point[1] = new Point(0, -1);
+                direction = 0;
+                return point;
+            case 3:
+                point[0] = new Point(playerX + playerSize, playerY + playerSize);
+                point[1] = new Point(1, 1);
+                direction = 3;
+                return point;
+            case 5:
+                point[0] = new Point(playerX, playerY + playerSize);
+                point[1] = new Point(-1, 1);
+                direction = 5;
+                return point;
+            case 4:
+                point[0] = new Point(playerX + playerSize/2, playerY + playerSize);
+                point[1] = new Point(0, 1);
+                direction = 4;
                 return point;
             default:
                 break;
@@ -283,9 +344,9 @@ public class runner extends JPanel {
         return new Polygon(polygonX, polygonY, polygonX.length).contains(x, y);
     }
     
-    public Point getColission(rays r) {
-        Point point = getRay(r)[0];
-        Point value = getRay(r)[1];
+    public Point getColission(int d) {
+        Point point = getRay(d)[0];
+        Point value = getRay(d)[1];
         int x = point.x;
         int y = point.y;
         int i = 0;
@@ -297,7 +358,13 @@ public class runner extends JPanel {
         }
         while(!getColiding(x, y) && i <= rayLength);
 
-        return (i <= rayLength) ? new Point(x, y) : new Point(-1, -1);
+        return (i <= rayLength) ? new Point(x, y) : new Point(x + rayLength, y + rayLength);
+    }
+
+    public double getColissionDistance(int d) {
+        double result = 0.0;
+        result = Double.valueOf(Math.abs(getColission(d).x - playerX/ getColission(d).y - playerY));
+        return result;
     }
 
     public static void main(String[] args) {
@@ -338,3 +405,55 @@ public class runner extends JPanel {
         }
     }
 }
+
+/*
+public Point[] getRay(rays r) {
+    Point[] point = new Point[2];
+    switch(r) {
+        case middleRight:
+            point[0] = new Point(playerX + playerSize, playerY + playerSize/2);
+            point[1] = new Point(1, 0);
+            direction = 2;
+            return point;
+        case middleLeft:
+            point[0] = new Point(playerX, playerY + playerSize/2);
+            point[1] = new Point(-1, 0);
+            direction = 6;
+            return point;
+        case topRight:
+            point[0] = new Point(playerX + playerSize, playerY);
+            point[1] = new Point(1, -1);
+            direction = 1;
+            return point;
+        case topLeft:
+            point[0] = new Point(playerX, playerY);
+            point[1] = new Point(-1, -1);
+            direction = 7;
+            return point;
+        case top:
+            point[0] = new Point(playerX + playerSize/2, playerY);
+            point[1] = new Point(0, -1);
+            direction = 0;
+            return point;
+        case bottomRight:
+            point[0] = new Point(playerX + playerSize, playerY + playerSize);
+            point[1] = new Point(1, 1);
+            direction = 3;
+            return point;
+        case bottomLeft:
+            point[0] = new Point(playerX, playerY + playerSize);
+            point[1] = new Point(-1, 1);
+            direction = 5;
+            return point;
+        case bottom:
+            point[0] = new Point(playerX + playerSize/2, playerY + playerSize);
+            point[1] = new Point(0, 1);
+            direction = 4;
+            return point;
+        default:
+            break;
+    }
+    System.out.println("Error passes in improper state - getRay");
+    return point;
+}
+*/

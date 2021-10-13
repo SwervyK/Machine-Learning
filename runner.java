@@ -53,7 +53,6 @@ public class runner extends JPanel {
                         };
         double[][] answer = calculateMatrices(in);
         Point[] result = getRay(calculateOut(answer));
-        System.out.println(error);
         playerMove = result[1];
     }
 
@@ -158,8 +157,12 @@ public class runner extends JPanel {
 
     public double[] getDirection() {
         double[] result = new double[5];
+        int currentDistance = direction;
         for (int i = -2; i < 2; i++) {
-            result[i + 2] = getColissionDistance(i);
+            if (currentDistance + i < 0) {
+                currentDistance += 8 + i;
+            }
+            result[i + 2] = getColissionDistance(currentDistance + i);
         }
         return result;
     }
@@ -267,6 +270,7 @@ public class runner extends JPanel {
     }
     
     public void Move(int x, int y) {
+        direction =  ((int)Math.toDegrees(Math.atan((playerY-y)/(playerX-x)))/45) - 1;
         if (getColiding(playerX + x + playerSize/2, playerY + y + playerSize/2)) {
             Stop();
             return;
@@ -296,47 +300,39 @@ public class runner extends JPanel {
             case 2:
                 point[0] = new Point(playerX + playerSize, playerY + playerSize/2);
                 point[1] = new Point(1, 0);
-                direction = 2;
                 return point;
             case 6:
                 point[0] = new Point(playerX, playerY + playerSize/2);
                 point[1] = new Point(-1, 0);
-                direction = 6;
                 return point;
             case 1:
                 point[0] = new Point(playerX + playerSize, playerY);
                 point[1] = new Point(1, -1);
-                direction = 1;
                 return point;
             case 7:
                 point[0] = new Point(playerX, playerY);
                 point[1] = new Point(-1, -1);
-                direction = 7;
                 return point;
             case 0:
                 point[0] = new Point(playerX + playerSize/2, playerY);
                 point[1] = new Point(0, -1);
-                direction = 0;
                 return point;
             case 3:
                 point[0] = new Point(playerX + playerSize, playerY + playerSize);
                 point[1] = new Point(1, 1);
-                direction = 3;
                 return point;
             case 5:
                 point[0] = new Point(playerX, playerY + playerSize);
                 point[1] = new Point(-1, 1);
-                direction = 5;
                 return point;
             case 4:
                 point[0] = new Point(playerX + playerSize/2, playerY + playerSize);
                 point[1] = new Point(0, 1);
-                direction = 4;
                 return point;
             default:
+                System.out.println("Error passes in improper state - getRay");
                 break;
         }
-        System.out.println("Error passes in improper state - getRay");
         return point;
     }
 

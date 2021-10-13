@@ -29,14 +29,15 @@ public class runner extends JPanel {
     Point playerMove;
     int direction = 0;
     double error = 0.0;
+    static boolean start = false;
 
-    double[][] x = new double[5][1];
-    double[][] w1 = new double[3][5];
-    double[][] b1 = new double[3][1];
-    double[][] hidden = new double[3][1];
-    double[][] b2 = new double[5][1];
-    double[][] w2 = new double[5][3];
-    double[][] out = new double[5][1];
+    static double[][] x = new double[5][1];
+    static double[][] w1 = new double[3][5];
+    static double[][] b1 = new double[3][1];
+    static double[][] hidden = new double[3][1];
+    static double[][] b2 = new double[5][1];
+    static double[][] w2 = new double[5][3];
+    static double[][] out = new double[5][1];
 
     public void aiStart() {
         randomiseMatrices(x);
@@ -45,13 +46,12 @@ public class runner extends JPanel {
         randomiseMatrices(hidden);
         randomiseMatrices(w2);
         randomiseMatrices(b2);
-        double[][] in = {{1.0},
-                         {0.0},
-                         {0.0},
-                         {1.0},
-                         {0.0}
-                        };
-        double[][] answer = calculateMatrices(in);
+        System.out.println("Starting");
+        aiUpdate();
+    }
+
+    public void aiUpdate() {
+        double[][] answer = calculateMatrices(getInputs());
         Point[] result = getRay(calculateOut(answer));
         playerMove = result[1];
     }
@@ -99,7 +99,7 @@ public class runner extends JPanel {
     }
 
     public double[][] calculateMatrices(double[][] input) {
-        double result[][] = new double[1][5];
+        double result[][] = new double[5][1];
         x = input;
         hidden = a1();
         out = result = a2();
@@ -128,21 +128,21 @@ public class runner extends JPanel {
         return result;
     }
 
-    public double[] getInputs() {
+    public double[][] getInputs() {
         return getDirection();
     }
 
     public double[] getAnswer() {
         double[] result = new double[out.length];
         int index = 0;
-        double[] values = getDirection();
+        double[][] values = getDirection();
         double old = 0.0;
         int i = 0;
-        for (double value : values) {
-            if (value > old) {
+        for (double value[] : values) {
+            if (value[0] > old) {
                 index = i;
             }
-            old = value;
+            old = value[0];
             i++;
         }
         int j = 0;
@@ -155,14 +155,14 @@ public class runner extends JPanel {
         return result;
     }
 
-    public double[] getDirection() {
-        double[] result = new double[5];
+    public double[][] getDirection() {
+        double[][] result = new double[5][1];
         int currentDistance = direction;
         for (int i = -2; i < 2; i++) {
             if (currentDistance + i < 0) {
                 currentDistance += 8 + i;
             }
-            result[i + 2] = getColissionDistance(currentDistance + i);
+            result[i + 2][0] = getColissionDistance(currentDistance + i);
         }
         return result;
     }
@@ -225,8 +225,9 @@ public class runner extends JPanel {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             UpdatePolygon(reset);
-            Move(playerMove);
-            aiStart();
+            if (start)
+                Move(playerMove);
+                aiUpdate();
             reset = false;
             //g2.drawPolygon(polygonX, polygonY, polygonX.length);
             g2.fillPolygon(polygonX, polygonY, polygonX.length);
@@ -240,26 +241,35 @@ public class runner extends JPanel {
     public JPanel Buttons() {
         var startButton = new JButton("Start");
         var stopButton = new JButton("Stop");
+        var saveButton = new JButton("Save");
         startButton.addActionListener(e -> Start());
         stopButton.addActionListener(e -> Stop());
+        saveButton.addActionListener(e -> Save());
         
         var buttonPanel = new JPanel();
         buttonPanel.add(startButton);
         buttonPanel.add(stopButton);
+        buttonPanel.add(saveButton);
         
         return buttonPanel;
     }
     
     public void Start() {
-        
+        aiStart();
+        start = true;
     }
     
     public void Stop() {
         System.out.println("Stoped");
+        start = false;
         reset = true;
         playerX = 100;
         playerY = 100;
         repaint(0, 0, getWidth(), getHeight());
+    }
+
+    public void Save() {
+
     }
 
     public void Move(Point p) {
@@ -366,7 +376,6 @@ public class runner extends JPanel {
     public static void main(String[] args) {
         runner r = new runner(); 
         r.Setup();
-        r.aiStart();
     }
     
     public void Setup() {

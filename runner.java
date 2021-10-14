@@ -27,8 +27,8 @@ public class runner extends JPanel {
     double clockSpeed = 100;
     double clock = 0;
     Point playerMove;
-    int direction = 0;
-    double error = 0.0;
+    static int direction = 0;
+    static double error = 0.0;
     static boolean start = false;
 
     static double[][] x = new double[5][1];
@@ -46,12 +46,12 @@ public class runner extends JPanel {
         randomiseMatrices(hidden);
         randomiseMatrices(w2);
         randomiseMatrices(b2);
-        System.out.println("Starting");
-        aiUpdate();
     }
 
     public void aiUpdate() {
+        aiStart();
         double[][] answer = calculateMatrices(getInputs());
+        System.out.println(calculateOut(answer));
         Point[] result = getRay(calculateOut(answer));
         playerMove = result[1];
     }
@@ -125,7 +125,8 @@ public class runner extends JPanel {
                 oldValue = value;
             }
         }
-        return result;
+        result -= 2;
+        return ((result >= 0) ? result + direction: result + 8) - 1;
     }
 
     public double[][] getInputs() {
@@ -158,9 +159,9 @@ public class runner extends JPanel {
     public double[][] getDirection() {
         double[][] result = new double[5][1];
         int currentDistance = direction;
-        for (int i = -2; i < 2; i++) {
+        for (int i = -2; i <= 2; i++) {
             if (currentDistance + i < 0) {
-                currentDistance += 8 + i;
+                currentDistance += 7 + i;
             }
             result[i + 2][0] = getColissionDistance(currentDistance + i);
         }
@@ -280,7 +281,9 @@ public class runner extends JPanel {
     }
     
     public void Move(int x, int y) {
-        direction =  ((int)Math.toDegrees(Math.atan((playerY-y)/(playerX-x)))/45) - 1;
+        direction = (((int)Math.toDegrees(Math.atan2(((y + playerY)-playerY),((x + playerX)-playerX))/45)) + 2);
+        direction = (direction < 0) ? direction + 8 : direction;
+        System.out.println("Direction: " + direction);
         if (getColiding(playerX + x + playerSize/2, playerY + y + playerSize/2)) {
             Stop();
             return;
@@ -340,7 +343,7 @@ public class runner extends JPanel {
                 point[1] = new Point(0, 1);
                 return point;
             default:
-                System.out.println("Error passes in improper state - getRay");
+                System.out.println("Error passes in improper state: " + d + " : - getRay");
                 break;
         }
         return point;

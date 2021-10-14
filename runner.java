@@ -28,7 +28,7 @@ public class runner extends JPanel {
     double clock = 0;
     Point playerMove;
     int direction = 0;
-    double error = 0.0;
+    double totalError = 0.0;
     static boolean start = false;
 
     static double[][] x = new double[5][1];
@@ -38,6 +38,9 @@ public class runner extends JPanel {
     static double[][] b2 = new double[5][1];
     static double[][] w2 = new double[5][3];
     static double[][] out = new double[5][1];
+    static double[] w = new double[(w1.length * w1[0].length) + (w2.length * w2[0].length)];
+    static double[] b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
+    static double[] error = new double[out.length]; 
 
     public void aiStart() {
         randomiseMatrices(x);
@@ -47,23 +50,91 @@ public class runner extends JPanel {
         randomiseMatrices(w2);
         randomiseMatrices(b2);
         System.out.println("Starting");
-        aiUpdate();
+    }
+
+    public void aiLearn() {
+        double[] cw2 = new double[w2.length * w2[0].length];
+        double[] cb2 = new double[w2.length * w2[0].length];
+
+        for (int i = 0; i < w.length; i++) {
+            cw2[i] = z1()[i][0] * z2()[i][0] * 2*(z2()[i][0] - out[i][0]);
+        }
+
+        for (int i = 0; i < b.length; i++) {
+            cb2[i] = 1 * z2()[i][0] * 2*(z2()[i][0] - out[i][0]);
+        }
+
+        double[] cw = new double[w1.length * w1[0].length];
+        double[] cb = new double[w1.length * w1[0].length];
+
+        for (int i = 0; i < w.length; i++) {
+            cw[i] = x[i][0] * z1()[i][0] * 2*(z1()[i][0] - z2()[i][0]);
+        }
+
+        for (int i = 0; i < b.length; i++) {
+            cb[i] = 1 * z1()[i][0] * 2*(z1()[i][0] - z2()[i][0]);
+        }
+    }
+
+    public void w() {
+        int index = 0;
+        for (int i = 0; i < w1.length; i++) {
+            for (int j = 0; j < w1[0].length; j++) {
+                w[index] = w1[i][j];
+                index++;
+            }
+        }
+        for (int i = 0; i < w2.length; i++) {
+            for (int j = 0; j < w2[0].length; j++) {
+                w[index] = w2[i][j];
+                index++;
+            }
+        }
+    }
+
+    public void b() {
+        int index = 0;
+        for (int i = 0; i < b1.length; i++) {
+            for (int j = 0; j < b1[0].length; j++) {
+                b[index] = b1[i][j];
+                index++;
+            }
+        }
+        for (int i = 0; i < b2.length; i++) {
+            for (int j = 0; j < b2[0].length; j++) {
+                b[index] = b2[i][j];
+                index++;
+            }
+        }
     }
 
     public void aiUpdate() {
         double[][] answer = calculateMatrices(getInputs());
         Point[] result = getRay(calculateOut(answer));
         playerMove = result[1];
+        w();
+        b();
+        aiLearn();
     }
 
-    public double[][] a1() {
+    public double[][] z1() {
+        double[][] result = multiplyMatrices(w1, x);
+        return result;
+    }
+
+    public double[][] a1f() {
         double[][] result = multiplyMatrices(w1, x);
         result = f(addMatrices(result, b1));
         return result;
     }
 
-    public double[][] a2() {
-        double[][] result = multiplyMatrices(w2, a1());
+    public double[][] z2() {
+        double[][] result = multiplyMatrices(w2, z1());
+        return result;
+    }
+
+    public double[][] a2f() {
+        double[][] result = multiplyMatrices(w2, a1f());
         result = f(addMatrices(result, b2));
         return result;
     }
@@ -101,12 +172,12 @@ public class runner extends JPanel {
     public double[][] calculateMatrices(double[][] input) {
         double result[][] = new double[5][1];
         x = input;
-        hidden = a1();
-        out = result = a2();
-        for (int i = 0; i < a2().length; i++) {
-            error += Math.pow((a2()[i][0] - getAnswer()[i]), 2);
+        hidden = a1f();
+        out = result = a2f();
+        for (int i = 0; i < a2f().length; i++) {
+            totalError += error[i] = Math.pow((a2f()[i][0] - getAnswer()[i]), 2);
         }
-        error /= a2().length;
+        totalError /= a2f().length;
         return result;
     }
 
@@ -145,12 +216,10 @@ public class runner extends JPanel {
             old = value[0];
             i++;
         }
-        int j = 0;
-        for (double value : result) {
+        for (int j = 0; j < result.length; j++) {
             if (j == index) {
                 result[j] = 1;
             }
-            j++;
         }
         return result;
     }

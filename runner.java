@@ -79,7 +79,6 @@ public class runner extends JPanel {
     }
 
     public void writeData(String data, File file) {
-        System.out.println(data);
         try  {
             FileWriter writer = new FileWriter(file);
             writer.write(data);

@@ -9,12 +9,18 @@ import javax.swing.JPanel;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class runner extends JPanel {
     
+    // data
     List<Point> points = new ArrayList<>();
     int[] polygonX = new int[0];
     int[] polygonY = new int[0];
@@ -30,7 +36,8 @@ public class runner extends JPanel {
     static int direction = 0;
     static double totalError = 0.0;
     static boolean start = false;
-
+    
+    // neural network
     static double[][] x = new double[5][1];
     static double[][] w1 = new double[3][5];
     static double[][] b1 = new double[3][1];
@@ -41,7 +48,74 @@ public class runner extends JPanel {
     static double[] w = new double[(w1.length * w1[0].length) + (w2.length * w2[0].length)];
     static double[] b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
     static double[] error = new double[out.length]; 
+    
+    // saving/files
+    String currentDir = System.getProperty("user.dir");
+    File polygonSave = new File(currentDir, "\\polygonData.txt");
+    
+    public void File() {
+        //aiStart();
+        //String[][] data = new String[w1.length][w1[0].length];
+        String[] data = {"one", "two", "three"};
+        for (int i = 0; i < data.length; i++) {
+            writeData(data[i], polygonSave);
+        }
+        //writeData(data, polygonSave);
+        String[] polygonData = readData(polygonSave);
+        for (int i = 0; i < polygonData.length; i++) {
+            System.out.println(polygonData[i]);
+        }
+    }
 
+    public void fileManager() {
+        try {
+            if (!polygonSave.exists()) {
+                polygonSave.createNewFile();
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void writeData(String data, File file) {
+        System.out.println(data);
+        try  {
+            FileWriter writer = new FileWriter(file);
+            writer.write(data);
+            writer.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void writeData(String[] dataArr, File file) {
+        String data = "";
+        for (int i = 0; i < dataArr.length; i++) {
+            data += (dataArr[i] + "\n");
+        }
+        writeData(data, file);
+    }
+
+    public String[] readData(File file) {
+        String[] result = new String[0];
+        try {
+            result = new String[(int)Files.lines(file.toPath()).count()];
+            Scanner scanner = new Scanner(file);
+            int index = 0;
+            while (scanner.hasNextLine()) {
+                result[index] = scanner.nextLine();
+                index++;
+            }
+            scanner.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+    
     public void aiStart() {
         randomiseMatrices(x);
         randomiseMatrices(w1);
@@ -50,42 +124,39 @@ public class runner extends JPanel {
         randomiseMatrices(w2);
         randomiseMatrices(b2);
     }
-
+    
     public void aiUpdate() {
         aiStart();
         double[][] answer = calculateMatrices(getInputs());
         System.out.println(calculateOut(answer));
         Point[] result = getRay(calculateOut(answer));
         playerMove = result[1];
-        w();
-        b();
-        aiLearn();
     }
-
+    
     public void aiLearn() {
         double[] cw2 = new double[w2.length * w2[0].length];
         double[] cb2 = new double[w2.length * w2[0].length];
-
+        
         for (int i = 0; i < w.length; i++) {
             cw2[i] = z1()[i][0] * z2()[i][0] * 2*(z2()[i][0] - out[i][0]);
         }
-
+        
         for (int i = 0; i < b.length; i++) {
             cb2[i] = 1 * z2()[i][0] * 2*(z2()[i][0] - out[i][0]);
         }
-
+        
         double[] cw = new double[w1.length * w1[0].length];
         double[] cb = new double[w1.length * w1[0].length];
-
+        
         for (int i = 0; i < w.length; i++) {
             cw[i] = x[i][0] * z1()[i][0] * 2*(z1()[i][0] - z2()[i][0]);
         }
-
+        
         for (int i = 0; i < b.length; i++) {
             cb[i] = 1 * z1()[i][0] * 2*(z1()[i][0] - z2()[i][0]);
         }
     }
-
+    
     public void w() {
         int index = 0;
         for (int i = 0; i < w1.length; i++) {
@@ -101,7 +172,7 @@ public class runner extends JPanel {
             }
         }
     }
-
+    
     public void b() {
         int index = 0;
         for (int i = 0; i < b1.length; i++) {
@@ -117,29 +188,29 @@ public class runner extends JPanel {
             }
         }
     }
-
+    
     public double[][] z1() {
         double[][] result = multiplyMatrices(w1, x);
         return result;
     }
-
+    
     public double[][] a1f() {
         double[][] result = multiplyMatrices(w1, x);
         result = f(addMatrices(result, b1));
         return result;
     }
-
+    
     public double[][] z2() {
         double[][] result = multiplyMatrices(w2, z1());
         return result;
     }
-
+    
     public double[][] a2f() {
         double[][] result = multiplyMatrices(w2, a1f());
         result = f(addMatrices(result, b2));
         return result;
     }
-
+    
     public double[][] multiplyMatrices(double[][] firstMatrix, double[][] secondMatrix) {
         double[][] result = new double[firstMatrix.length][secondMatrix[0].length];
         for (int row = 0; row < result.length; row++) {
@@ -147,10 +218,10 @@ public class runner extends JPanel {
                 result[row][col] = multiplyMatricesCell(firstMatrix, secondMatrix, row, col);
             }
         }
-    
+        
         return result;
     }
-
+    
     double multiplyMatricesCell(double[][] firstMatrix, double[][] secondMatrix, int row, int col) {
         double cell = 0;
         for (int i = 0; i < secondMatrix.length; i++) {
@@ -158,18 +229,18 @@ public class runner extends JPanel {
         }
         return cell;
     }
-
+    
     public double[][] addMatrices(double[][] firstMatrix, double[][] secondMatrix)
     {
         double result[][] = new double[secondMatrix.length][secondMatrix[0].length];
- 
+        
         for (int row = 0; row < secondMatrix.length; row++)
-            for (int col = 0; col < secondMatrix[0].length; col++)
-                result[row][col] = firstMatrix[row][col] + secondMatrix[row][col];
- 
+        for (int col = 0; col < secondMatrix[0].length; col++)
+        result[row][col] = firstMatrix[row][col] + secondMatrix[row][col];
+        
         return result;
     }
-
+    
     public double[][] calculateMatrices(double[][] input) {
         double result[][] = new double[5][1];
         x = input;
@@ -181,7 +252,7 @@ public class runner extends JPanel {
         totalError /= a2f().length;
         return result;
     }
-
+    
     public int calculateOut(double[][] in) {
         int result = 0;
         double oldValue = 0.0, value = 0.0;
@@ -200,11 +271,11 @@ public class runner extends JPanel {
         result -= 2;
         return ((result >= 0) ? result + direction: result + 8) - 1;
     }
-
+    
     public double[][] getInputs() {
         return getDirection();
     }
-
+    
     public double[] getAnswer() {
         double[] result = new double[out.length];
         int index = 0;
@@ -225,7 +296,7 @@ public class runner extends JPanel {
         }
         return result;
     }
-
+    
     public double[][] getDirection() {
         double[][] result = new double[5][1];
         int currentDistance = direction;
@@ -237,13 +308,13 @@ public class runner extends JPanel {
         }
         return result;
     }
-
+    
     public void print2D(double[][] mat)
     {
         for (double[] row : mat)
-            System.out.println(Arrays.toString(row));
+        System.out.println(Arrays.toString(row));
     }
-
+    
     public void randomiseMatrices(double[][] in) {
         for (int row = 0; row < in.length; row++) {
             for (int col = 0; col < in[row].length; col++) {
@@ -251,7 +322,7 @@ public class runner extends JPanel {
             }
         }
     }
-
+    
     public double[][] f(double[][] in) {
         double[][] result = new double[in.length][in[0].length];
         for (int row = 0; row < in.length; row++) {
@@ -260,10 +331,10 @@ public class runner extends JPanel {
                 result[row][col] = (1/( 1 + Math.pow(Math.E,(-1*x))));
             }
         }
-
+        
         return result;
     }
-
+    
     enum rays {
         middleRight,
         middleLeft,
@@ -296,9 +367,10 @@ public class runner extends JPanel {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             UpdatePolygon(reset);
-            if (start)
+            if (start) {
                 Move(playerMove);
                 aiUpdate();
+            }
             reset = false;
             //g2.drawPolygon(polygonX, polygonY, polygonX.length);
             g2.fillPolygon(polygonX, polygonY, polygonX.length);
@@ -338,11 +410,11 @@ public class runner extends JPanel {
         playerY = 100;
         repaint(0, 0, getWidth(), getHeight());
     }
-
+    
     public void Save() {
-
+        
     }
-
+    
     public void Move(Point p) {
         if (p == null) {
             return;
@@ -376,49 +448,49 @@ public class runner extends JPanel {
         }
         repaint(0, 0, getWidth(), getHeight());
     }
-
+    
     public Point[] getRay(int d) {
         Point[] point = new Point[2];
         switch(d) {
             case 2:
-                point[0] = new Point(playerX + playerSize, playerY + playerSize/2);
-                point[1] = new Point(1, 0);
-                return point;
+            point[0] = new Point(playerX + playerSize, playerY + playerSize/2);
+            point[1] = new Point(1, 0);
+            return point;
             case 6:
-                point[0] = new Point(playerX, playerY + playerSize/2);
-                point[1] = new Point(-1, 0);
-                return point;
+            point[0] = new Point(playerX, playerY + playerSize/2);
+            point[1] = new Point(-1, 0);
+            return point;
             case 1:
-                point[0] = new Point(playerX + playerSize, playerY);
-                point[1] = new Point(1, -1);
-                return point;
+            point[0] = new Point(playerX + playerSize, playerY);
+            point[1] = new Point(1, -1);
+            return point;
             case 7:
-                point[0] = new Point(playerX, playerY);
-                point[1] = new Point(-1, -1);
-                return point;
+            point[0] = new Point(playerX, playerY);
+            point[1] = new Point(-1, -1);
+            return point;
             case 0:
-                point[0] = new Point(playerX + playerSize/2, playerY);
-                point[1] = new Point(0, -1);
-                return point;
+            point[0] = new Point(playerX + playerSize/2, playerY);
+            point[1] = new Point(0, -1);
+            return point;
             case 3:
-                point[0] = new Point(playerX + playerSize, playerY + playerSize);
-                point[1] = new Point(1, 1);
-                return point;
+            point[0] = new Point(playerX + playerSize, playerY + playerSize);
+            point[1] = new Point(1, 1);
+            return point;
             case 5:
-                point[0] = new Point(playerX, playerY + playerSize);
-                point[1] = new Point(-1, 1);
-                return point;
+            point[0] = new Point(playerX, playerY + playerSize);
+            point[1] = new Point(-1, 1);
+            return point;
             case 4:
-                point[0] = new Point(playerX + playerSize/2, playerY + playerSize);
-                point[1] = new Point(0, 1);
-                return point;
+            point[0] = new Point(playerX + playerSize/2, playerY + playerSize);
+            point[1] = new Point(0, 1);
+            return point;
             default:
-                System.out.println("Error passes in improper state: " + d + " : - getRay");
-                break;
+            System.out.println("Error passes in improper state: " + d + " : - getRay");
+            break;
         }
         return point;
     }
-
+    
     public boolean getColiding(int x, int y) {
         return new Polygon(polygonX, polygonY, polygonX.length).contains(x, y);
     }
@@ -429,26 +501,27 @@ public class runner extends JPanel {
         int x = point.x;
         int y = point.y;
         int i = 0;
-
+        
         do {
             x += value.x;
             y += value.y;
             i++;
         }
         while(!getColiding(x, y) && i <= rayLength);
-
+        
         return (i <= rayLength) ? new Point(x, y) : new Point(x + rayLength, y + rayLength);
     }
-
+    
     public double getColissionDistance(int d) {
         double result = 0.0;
         result = Double.valueOf(Math.abs(getColission(d).x - playerX/ getColission(d).y - playerY));
         return result;
     }
-
+    
     public static void main(String[] args) {
         runner r = new runner(); 
         r.Setup();
+        r.File();
     }
     
     public void Setup() {
@@ -461,6 +534,7 @@ public class runner extends JPanel {
             //frame.pack();
             frame.setVisible(true);
         });
+        fileManager();
     }
     
     private void UpdatePolygon(boolean wantReset) {
@@ -489,47 +563,47 @@ public Point[] getRay(rays r) {
     Point[] point = new Point[2];
     switch(r) {
         case middleRight:
-            point[0] = new Point(playerX + playerSize, playerY + playerSize/2);
-            point[1] = new Point(1, 0);
-            direction = 2;
-            return point;
+        point[0] = new Point(playerX + playerSize, playerY + playerSize/2);
+        point[1] = new Point(1, 0);
+        direction = 2;
+        return point;
         case middleLeft:
-            point[0] = new Point(playerX, playerY + playerSize/2);
-            point[1] = new Point(-1, 0);
-            direction = 6;
-            return point;
+        point[0] = new Point(playerX, playerY + playerSize/2);
+        point[1] = new Point(-1, 0);
+        direction = 6;
+        return point;
         case topRight:
-            point[0] = new Point(playerX + playerSize, playerY);
-            point[1] = new Point(1, -1);
-            direction = 1;
-            return point;
+        point[0] = new Point(playerX + playerSize, playerY);
+        point[1] = new Point(1, -1);
+        direction = 1;
+        return point;
         case topLeft:
-            point[0] = new Point(playerX, playerY);
-            point[1] = new Point(-1, -1);
-            direction = 7;
-            return point;
+        point[0] = new Point(playerX, playerY);
+        point[1] = new Point(-1, -1);
+        direction = 7;
+        return point;
         case top:
-            point[0] = new Point(playerX + playerSize/2, playerY);
-            point[1] = new Point(0, -1);
-            direction = 0;
-            return point;
+        point[0] = new Point(playerX + playerSize/2, playerY);
+        point[1] = new Point(0, -1);
+        direction = 0;
+        return point;
         case bottomRight:
-            point[0] = new Point(playerX + playerSize, playerY + playerSize);
-            point[1] = new Point(1, 1);
-            direction = 3;
-            return point;
+        point[0] = new Point(playerX + playerSize, playerY + playerSize);
+        point[1] = new Point(1, 1);
+        direction = 3;
+        return point;
         case bottomLeft:
-            point[0] = new Point(playerX, playerY + playerSize);
-            point[1] = new Point(-1, 1);
-            direction = 5;
-            return point;
+        point[0] = new Point(playerX, playerY + playerSize);
+        point[1] = new Point(-1, 1);
+        direction = 5;
+        return point;
         case bottom:
-            point[0] = new Point(playerX + playerSize/2, playerY + playerSize);
-            point[1] = new Point(0, 1);
-            direction = 4;
-            return point;
+        point[0] = new Point(playerX + playerSize/2, playerY + playerSize);
+        point[1] = new Point(0, 1);
+        direction = 4;
+        return point;
         default:
-            break;
+        break;
     }
     System.out.println("Error passes in improper state - getRay");
     return point;

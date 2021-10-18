@@ -4,6 +4,7 @@ import java.awt.Point;
 import javax.swing.SwingUtilities;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -11,7 +12,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.FileWriter;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +21,7 @@ import java.util.Scanner;
 public class runner extends JPanel {
     
     // data
-    List<Point> points = new ArrayList<>();
+    static List<Point> points = new ArrayList<>();
     int[] polygonX = new int[0];
     int[] polygonY = new int[0];
     boolean draw = false;
@@ -49,35 +49,41 @@ public class runner extends JPanel {
     static double[] b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
     static double[] error = new double[out.length]; 
     
+    // version
+    static int currentVersion = 0;
     // saving/files
     String currentDir = System.getProperty("user.dir");
-    File polygonSave = new File(currentDir, "\\polygonData.txt");
+    File version = new File(currentDir, "logs\\version.txt");
+    File polygonSave;
     
     public void File() {
-        //aiStart();
-        //String[][] data = new String[w1.length][w1[0].length];
-        String[] data = {"one", "two", "three"};
-        for (int i = 0; i < data.length; i++) {
-            writeData(data[i], polygonSave);
-        }
-        //writeData(data, polygonSave);
-        String[] polygonData = readData(polygonSave);
-        for (int i = 0; i < polygonData.length; i++) {
-            System.out.println(polygonData[i]);
-        }
+        
     }
-
+    
     public void fileManager() {
         try {
-            if (!polygonSave.exists()) {
-                polygonSave.createNewFile();
+            if (!version.exists()) {
+                //version.createNewFile();
             }
+            Scanner scanner = new Scanner(version);
+            String nextLn = scanner.nextLine();
+            if (!nextLn.equals("0")) {
+                currentVersion = Integer.parseInt(nextLn);
+            }
+            else {
+                currentVersion = 0;
+            }
+            FileWriter writer = new FileWriter(version);
+            writer.write(String.valueOf((currentVersion + 1)));
+            writer.close();
+            scanner.close();
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+        
     }
-
+    
     public void writeData(String data, File file) {
         try  {
             FileWriter writer = new FileWriter(file);
@@ -88,7 +94,7 @@ public class runner extends JPanel {
             e.printStackTrace();
         }
     }
-
+    
     public void writeData(String[] dataArr, File file) {
         String data = "";
         for (int i = 0; i < dataArr.length; i++) {
@@ -96,7 +102,7 @@ public class runner extends JPanel {
         }
         writeData(data, file);
     }
-
+    
     public String[] readData(File file) {
         String[] result = new String[0];
         try {
@@ -384,14 +390,17 @@ public class runner extends JPanel {
         var startButton = new JButton("Start");
         var stopButton = new JButton("Stop");
         var saveButton = new JButton("Save");
+        var loadButton = new JButton("Load");
         startButton.addActionListener(e -> Start());
         stopButton.addActionListener(e -> Stop());
         saveButton.addActionListener(e -> Save());
+        loadButton.addActionListener(e -> Load());
         
         var buttonPanel = new JPanel();
         buttonPanel.add(startButton);
         buttonPanel.add(stopButton);
         buttonPanel.add(saveButton);
+        buttonPanel.add(loadButton);
         
         return buttonPanel;
     }
@@ -411,6 +420,37 @@ public class runner extends JPanel {
     }
     
     public void Save() {
+        polygonSave = new File(currentDir, "logs\\polygonData" + currentVersion + ".txt");
+        try {
+            if (!polygonSave.exists()) {
+                polygonSave.createNewFile();
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        String[] polygonPoints = new String[points.size()];
+        for (int i = 0; i < polygonPoints.length; i++) {
+            polygonPoints[i] = String.valueOf(points.get(i));
+        }
+        writeData(polygonPoints, polygonSave);
+    }
+    
+    public void Load() {
+        JFileChooser fc = new JFileChooser();
+        int returnVal = fc.showOpenDialog(runner.this);
+        File file = fc.getSelectedFile();
+        try {
+            String[] polygonData = new String[(int)Files.lines(file.toPath()).count()];
+            polygonData =  readData(file);
+            for (int i = 0; i < polygonData.length; i++) {
+                Point point = (Point)polygonData[i];
+                points.set(i, point);
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
         
     }
     

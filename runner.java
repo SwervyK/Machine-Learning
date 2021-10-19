@@ -55,6 +55,8 @@ public class runner extends JPanel {
     String currentDir = System.getProperty("user.dir");
     File version = new File(currentDir, "logs\\version.txt");
     File polygonSave;
+    File wSave;
+    File bSave;
     
     public void File() {
         
@@ -133,7 +135,6 @@ public class runner extends JPanel {
     public void aiUpdate() {
         aiStart();
         double[][] answer = calculateMatrices(getInputs());
-        System.out.println(calculateOut(answer));
         Point[] result = getRay(calculateOut(answer));
         playerMove = result[1];
     }
@@ -274,7 +275,13 @@ public class runner extends JPanel {
             }
         }
         result -= 2;
-        return ((result >= 0) ? result + direction: result + 8) - 1;
+        if (result > 7) {
+            result -= 7;
+        }
+        if (result < 0) {
+            result += 7;
+        }
+        return result;
     }
     
     public double[][] getInputs() {
@@ -307,7 +314,10 @@ public class runner extends JPanel {
         int currentDistance = direction;
         for (int i = -2; i <= 2; i++) {
             if (currentDistance + i < 0) {
-                currentDistance += 7 + i;
+                currentDistance += 7;
+            }
+            if (currentDistance + i > 7) {
+                currentDistance -= 7;
             }
             result[i + 2][0] = getColissionDistance(currentDistance + i);
         }
@@ -372,6 +382,7 @@ public class runner extends JPanel {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             UpdatePolygon(reset);
+            getColissionDistance(0);
             if (start) {
                 Move(playerMove);
                 aiUpdate();
@@ -385,22 +396,27 @@ public class runner extends JPanel {
         clock++;
         repaint(0, 0, getWidth(), getHeight());
     }
+
+    
     
     public JPanel Buttons() {
         var startButton = new JButton("Start");
         var stopButton = new JButton("Stop");
         var saveButton = new JButton("Save");
         var loadButton = new JButton("Load");
+        var saveBrainButton = new JButton("Save Brain");
         startButton.addActionListener(e -> Start());
         stopButton.addActionListener(e -> Stop());
         saveButton.addActionListener(e -> Save());
         loadButton.addActionListener(e -> Load());
+        saveBrainButton.addActionListener(e -> SaveBrain());
         
         var buttonPanel = new JPanel();
         buttonPanel.add(startButton);
         buttonPanel.add(stopButton);
         buttonPanel.add(saveButton);
         buttonPanel.add(loadButton);
+        buttonPanel.add(saveBrainButton);
         
         return buttonPanel;
     }
@@ -435,23 +451,85 @@ public class runner extends JPanel {
         }
         writeData(polygonPoints, polygonSave);
     }
-    
-    public void Load() {
-        JFileChooser fc = new JFileChooser();
-        int returnVal = fc.showOpenDialog(runner.this);
-        File file = fc.getSelectedFile();
+
+    public void SaveBrain() {
+        wSave = new File(currentDir, "logs\\weights" + currentVersion + ".txt");
         try {
-            String[] polygonData = new String[(int)Files.lines(file.toPath()).count()];
-            polygonData =  readData(file);
-            for (int i = 0; i < polygonData.length; i++) {
-                Point point = (Point)polygonData[i];
-                points.set(i, point);
+            if (!wSave.exists()) {
+                wSave.createNewFile();
             }
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        
+        String[] weights = new String[w.length];
+        for (int i = 0; i < weights.length; i++) {
+            weights[i] = String.valueOf(w[i]);
+        }
+        writeData(weights, wSave);
+
+        bSave = new File(currentDir, "logs\\biases" + currentVersion + ".txt");
+        try {
+            if (!bSave.exists()) {
+                bSave.createNewFile();
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        String[] biases = new String[b.length];
+        for (int i = 0; i < biases.length; i++) {
+            weights[i] = String.valueOf(b[i]);
+        }
+        writeData(biases, bSave);
+    }
+    
+    public String[] FileLoad(String dialog) {
+        JFileChooser fc = new JFileChooser();
+        fc.setCurrentDirectory(version);
+        fc.setDialogTitle(dialog);
+        int returnVal = fc.showOpenDialog(runner.this);
+        File file = fc.getSelectedFile();
+        String[] data = new String[0];
+        if (returnVal == 0) {
+            try {
+                data = new String[(int)Files.lines(file.toPath()).count()];
+                data =  readData(file);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return data;
+    }
+    
+    public void Load() {
+        try {
+            String[] polygonData = FileLoad("Select Polygon Data");
+            for (int i = 0; i < polygonData.length; i++) {
+                int xStart = polygonData[i].indexOf("x") + 1;
+                int xEnd = polygonData[i].indexOf(",");
+                int yStart = polygonData[i].indexOf("y") + 1;
+                int yEnd = polygonData[i].indexOf("]");
+                int subX = Integer.parseInt(polygonData[i].substring(xStart + 1, xEnd));
+                int subY = Integer.parseInt(polygonData[i].substring(yStart + 1, yEnd));
+                Point point = new Point(subX, subY);
+                if (points.size() >= polygonData.length) {
+                    points.set(i, point);
+                } 
+                else {
+                    points.add(i, point);
+                }
+            }
+            if (points.size() > polygonData.length) {
+                for (int i = polygonData.length; i < points.size(); i++) {
+                    points.remove(i);
+                }
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     public void Move(Point p) {
@@ -464,7 +542,6 @@ public class runner extends JPanel {
     public void Move(int x, int y) {
         direction = (((int)Math.toDegrees(Math.atan2(((y + playerY)-playerY),((x + playerX)-playerX))/45)) + 2);
         direction = (direction < 0) ? direction + 8 : direction;
-        System.out.println("Direction: " + direction);
         if (getColiding(playerX + x + playerSize/2, playerY + y + playerSize/2)) {
             Stop();
             return;
@@ -546,14 +623,15 @@ public class runner extends JPanel {
             y += value.y;
             i++;
         }
-        while(!getColiding(x, y) && i <= rayLength);
-        
-        return (i <= rayLength) ? new Point(x, y) : new Point(x + rayLength, y + rayLength);
+        while(!getColiding(x, y) && i < rayLength);
+        //System.out.println((i <= rayLength) ? new Point(x, y) : new Point(x + rayLength, y + rayLength));
+        return (i < rayLength) ? new Point(x, y) : new Point(playerX + rayLength, playerY + rayLength);
     }
     
     public double getColissionDistance(int d) {
         double result = 0.0;
-        result = Double.valueOf(Math.abs(getColission(d).x - playerX/ getColission(d).y - playerY));
+        result = Double.valueOf(Math.abs(getColission(d).x - playerX / getColission(d).y - playerY));
+        System.out.println((Math.abs(getColission(d).x - playerX / getColission(d).y - playerY)));
         return result;
     }
     
@@ -598,53 +676,40 @@ public class runner extends JPanel {
 }
 
 /*
-public Point[] getRay(rays r) {
-    Point[] point = new Point[2];
-    switch(r) {
-        case middleRight:
-        point[0] = new Point(playerX + playerSize, playerY + playerSize/2);
-        point[1] = new Point(1, 0);
-        direction = 2;
-        return point;
-        case middleLeft:
-        point[0] = new Point(playerX, playerY + playerSize/2);
-        point[1] = new Point(-1, 0);
-        direction = 6;
-        return point;
-        case topRight:
-        point[0] = new Point(playerX + playerSize, playerY);
-        point[1] = new Point(1, -1);
-        direction = 1;
-        return point;
-        case topLeft:
-        point[0] = new Point(playerX, playerY);
-        point[1] = new Point(-1, -1);
-        direction = 7;
-        return point;
-        case top:
-        point[0] = new Point(playerX + playerSize/2, playerY);
-        point[1] = new Point(0, -1);
-        direction = 0;
-        return point;
-        case bottomRight:
-        point[0] = new Point(playerX + playerSize, playerY + playerSize);
-        point[1] = new Point(1, 1);
-        direction = 3;
-        return point;
-        case bottomLeft:
-        point[0] = new Point(playerX, playerY + playerSize);
-        point[1] = new Point(-1, 1);
-        direction = 5;
-        return point;
-        case bottom:
-        point[0] = new Point(playerX + playerSize/2, playerY + playerSize);
-        point[1] = new Point(0, 1);
-        direction = 4;
-        return point;
-        default:
-        break;
+public void Load() {
+    JFileChooser fc = new JFileChooser();
+    fc.setCurrentDirectory(version);
+    fc.setDialogTitle("Select Polygon File");
+    int returnVal = fc.showOpenDialog(runner.this);
+    File file = fc.getSelectedFile();
+    if (returnVal == 0) {
+        try {
+            String[] polygonData = new String[(int)Files.lines(file.toPath()).count()];
+            polygonData =  readData(file);
+            for (int i = 0; i < polygonData.length; i++) {
+                int xStart = polygonData[i].indexOf("x") + 1;
+                int xEnd = polygonData[i].indexOf(",");
+                int yStart = polygonData[i].indexOf("y") + 1;
+                int yEnd = polygonData[i].indexOf("]");
+                int subX = Integer.parseInt(polygonData[i].substring(xStart + 1, xEnd));
+                int subY = Integer.parseInt(polygonData[i].substring(yStart + 1, yEnd));
+                Point point = new Point(subX, subY);
+                if (points.size() >= polygonData.length) {
+                    points.set(i, point);
+                } 
+                else {
+                    points.add(i, point);
+                }
+            }
+            if (points.size() > polygonData.length) {
+                for (int i = polygonData.length; i < points.size(); i++) {
+                    points.remove(i);
+                }
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-    System.out.println("Error passes in improper state - getRay");
-    return point;
 }
 */

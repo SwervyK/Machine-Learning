@@ -569,35 +569,35 @@ public class runner extends JPanel {
         Point[] point = new Point[2];
         switch(d) {
             case 2:
-            point[0] = new Point(playerX + playerSize, playerY + playerSize/2);
+            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX + playerSize, playerY + playerSize/2
             point[1] = new Point(1, 0);
             return point;
             case 6:
-            point[0] = new Point(playerX, playerY + playerSize/2);
+            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX, playerY + playerSize/2
             point[1] = new Point(-1, 0);
             return point;
             case 1:
-            point[0] = new Point(playerX + playerSize, playerY);
+            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX + playerSize, playerY
             point[1] = new Point(1, -1);
             return point;
             case 7:
-            point[0] = new Point(playerX, playerY);
+            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX, playerY
             point[1] = new Point(-1, -1);
             return point;
             case 0:
-            point[0] = new Point(playerX + playerSize/2, playerY);
+            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX + playerSize/2, playerY
             point[1] = new Point(0, -1);
             return point;
             case 3:
-            point[0] = new Point(playerX + playerSize, playerY + playerSize);
+            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX + playerSize, playerY + playerSize
             point[1] = new Point(1, 1);
             return point;
             case 5:
-            point[0] = new Point(playerX, playerY + playerSize);
+            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX, playerY + playerSize
             point[1] = new Point(-1, 1);
             return point;
             case 4:
-            point[0] = new Point(playerX + playerSize/2, playerY + playerSize);
+            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX + playerSize/2, playerY + playerSize
             point[1] = new Point(0, 1);
             return point;
             default:
@@ -611,27 +611,25 @@ public class runner extends JPanel {
         return new Polygon(polygonX, polygonY, polygonX.length).contains(x, y);
     }
     
-    public Point getColission(int d) {
+    public Point getColission(int d, boolean pos) {
         Point point = getRay(d)[0];
         Point value = getRay(d)[1];
         int x = point.x;
         int y = point.y;
         int i = 0;
-        
         do {
             x += value.x;
             y += value.y;
             i++;
         }
         while(!getColiding(x, y) && i < rayLength);
-        //System.out.println((i <= rayLength) ? new Point(x, y) : new Point(x + rayLength, y + rayLength));
-        return (i < rayLength) ? new Point(x, y) : new Point(playerX + rayLength, playerY + rayLength);
+        return (pos)? new Point(x, y) : new Point(Math.abs(Math.abs(x * value.x) + (value.x * point.x)), Math.abs(Math.abs(y * value.y) + (value.y * point.y))); //(i < rayLength) ? new Point(x, y) : new Point(l, h)
     }
     
     public double getColissionDistance(int d) {
         double result = 0.0;
-        result = Double.valueOf(Math.abs(getColission(d).x - playerX / getColission(d).y - playerY));
-        System.out.println((Math.abs(getColission(d).x - playerX / getColission(d).y - playerY)));
+        result = Double.valueOf(Math.sqrt(Math.pow(getColission(d, false).x, 2) + Math.pow(getColission(d, false).y, 2)));
+        System.out.println(result);
         return result;
     }
     

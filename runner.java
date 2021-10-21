@@ -388,7 +388,9 @@ public class runner extends JPanel {
             g2.setStroke(new BasicStroke(2));
             g2.drawLine(colission.x, colission.y, colission.x, colission.y);
             Point colissionLenght = getColission(ray, false);
-            g2.drawLine(200, 120, colissionLenght.x + 200, colissionLenght.y + 120);
+            g2.drawLine(colissionLenght.x + 200, 120, colissionLenght.x + 200, colissionLenght.y + 120); //y
+            g2.drawLine(200, 120, colissionLenght.x + 200, 120); //x
+            g2.drawLine(200, 120, colissionLenght.x + 200, colissionLenght.y + 120); //hyp
             g2.drawString(Double.toString(colisionD), 200, 200);
             if (start) {
                 //Move(0, -1);

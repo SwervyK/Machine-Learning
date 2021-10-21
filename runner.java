@@ -134,12 +134,6 @@ public class runner extends JPanel {
     
     public void aiUpdate() {
         double[][] answer = calculateMatrices(getInputs());
-        System.out.println("Inputs");
-        print2D(getInputs());
-        System.out.println("Answer");
-        print2D(answer);
-        System.out.println("Direction");
-        System.out.println(calculateOut(answer));
         Point[] result = getRay(calculateOut(answer));
         playerMove = result[1];
     }

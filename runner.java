@@ -47,8 +47,7 @@ public class runner extends JPanel {
     static double[][] out = new double[5][1];
     static double[] w = new double[(w1.length * w1[0].length) + (w2.length * w2[0].length)];
     static double[] b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
-    static double[] error = new double[out.length]; 
-    static int ranNum = 0;
+    static double[] error = new double[out.length];
     
     // version
     static int currentVersion = 0;
@@ -66,7 +65,7 @@ public class runner extends JPanel {
     public void fileManager() {
         try {
             if (!version.exists()) {
-                //version.createNewFile();
+                version.createNewFile();
             }
             Scanner scanner = new Scanner(version);
             String nextLn = scanner.nextLine();
@@ -125,7 +124,7 @@ public class runner extends JPanel {
     }
     
     public void aiStart() {
-        randomiseMatrices(x);
+        //randomiseMatrices(x);
         randomiseMatrices(w1);
         randomiseMatrices(b1);
         randomiseMatrices(hidden);
@@ -134,8 +133,13 @@ public class runner extends JPanel {
     }
     
     public void aiUpdate() {
-        aiStart();
         double[][] answer = calculateMatrices(getInputs());
+        System.out.println("Inputs");
+        print2D(getInputs());
+        System.out.println("Answer");
+        print2D(answer);
+        System.out.println("Direction");
+        System.out.println(calculateOut(answer));
         Point[] result = getRay(calculateOut(answer));
         playerMove = result[1];
     }
@@ -383,18 +387,16 @@ public class runner extends JPanel {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             UpdatePolygon(reset);
-            int ray = ranNum;
-            double colisionD = getColissionDistance(ray);
-            Point colission = getColission(ray, true);
-            g2.setStroke(new BasicStroke(2));
-            g2.drawLine(colission.x, colission.y, colission.x, colission.y);
-            Point colissionLenght = getColission(ray, false);
-            g2.drawLine(colissionLenght.x + 200, 120, colissionLenght.x + 200, colissionLenght.y + 120); //y
-            g2.drawLine(200, 120, colissionLenght.x + 200, 120); //x
-            g2.drawLine(200, 120, colissionLenght.x + 200, colissionLenght.y + 120); //hyp
-            g2.drawString(Double.toString(colisionD), 200, 200);
+            //double colisionD = getColissionDistance(0);
+            //Point colission = getColission(0, true);
+            //g2.setStroke(new BasicStroke(2));
+            //g2.drawLine(colission.x, colission.y, colission.x, colission.y);
+            //Point colissionLenght = getColission(0, false);
+            //g2.drawLine(colissionLenght.x + 200, 120, colissionLenght.x + 200, colissionLenght.y + 120); //y
+            //g2.drawLine(200, 120, colissionLenght.x + 200, 120); //x
+            //g2.drawLine(200, 120, colissionLenght.x + 200, colissionLenght.y + 120); //hyp
+            //g2.drawString(Double.toString(colisionD), 200, 200);
             if (start) {
-                //Move(0, -1);
                 Move(playerMove);
                 aiUpdate();
             }
@@ -407,31 +409,25 @@ public class runner extends JPanel {
         clock++;
         repaint(0, 0, getWidth(), getHeight());
     }
-    public int NextRay() {
-        return ranNum += (ranNum + 1 > 7) ? -7 : 1;
-    }
     
     public JPanel Buttons() {
         var startButton = new JButton("Start");
         var stopButton = new JButton("Stop");
         var saveButton = new JButton("Save");
         var loadButton = new JButton("Load");
-        var nextRay = new JButton("Next Ray");
         var saveBrainButton = new JButton("Save Brain");
         startButton.addActionListener(e -> Start());
         stopButton.addActionListener(e -> Stop());
         saveButton.addActionListener(e -> Save());
         loadButton.addActionListener(e -> Load());
         saveBrainButton.addActionListener(e -> SaveBrain());
-        nextRay.addActionListener(e -> NextRay());
         
         var buttonPanel = new JPanel();
         buttonPanel.add(startButton);
         buttonPanel.add(stopButton);
-        //buttonPanel.add(saveButton);
-        //buttonPanel.add(loadButton);
-        //buttonPanel.add(saveBrainButton);
-        buttonPanel.add(nextRay);
+        buttonPanel.add(saveButton);
+        buttonPanel.add(loadButton);
+        buttonPanel.add(saveBrainButton);
         
         return buttonPanel;
     }
@@ -632,13 +628,14 @@ public class runner extends JPanel {
         int x = point.x;
         int y = point.y;
         int i = 0;
+        double length = (d % 2 == 0) ? rayLength : rayLength/Math.sqrt(2);
         do {
             x += value.x;
             y += value.y;
             i++;
         }
-        while(!getColiding(x, y) && i < rayLength);
-        return (pos) ? new Point(x, y) : new Point(Math.abs(x - point.x), Math.abs(y - point.y)); //(i < rayLength) ? new Point(x, y) : new Point(l, h)
+        while(!getColiding(x, y) && i < length);
+        return (pos) ? new Point(x, y) : new Point(Math.abs(x - point.x), Math.abs(y - point.y));
     }
     
     public double getColissionDistance(int d) {

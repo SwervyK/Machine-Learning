@@ -48,6 +48,7 @@ public class runner extends JPanel {
     static double[] w = new double[(w1.length * w1[0].length) + (w2.length * w2[0].length)];
     static double[] b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
     static double[] error = new double[out.length]; 
+    static int ranNum = 0;
     
     // version
     static int currentVersion = 0;
@@ -406,9 +407,8 @@ public class runner extends JPanel {
         clock++;
         repaint(0, 0, getWidth(), getHeight());
     }
-    static int ranNum = 0;
     public int NextRay() {
-        return (ranNum + 1 > 7) ? ranNum = 0 : ranNum + 1;
+        return ranNum += (ranNum + 1 > 7) ? -7 : 1;
     }
     
     public JPanel Buttons() {
@@ -428,9 +428,10 @@ public class runner extends JPanel {
         var buttonPanel = new JPanel();
         buttonPanel.add(startButton);
         buttonPanel.add(stopButton);
-        buttonPanel.add(saveButton);
-        buttonPanel.add(loadButton);
-        buttonPanel.add(saveBrainButton);
+        //buttonPanel.add(saveButton);
+        //buttonPanel.add(loadButton);
+        //buttonPanel.add(saveBrainButton);
+        buttonPanel.add(nextRay);
         
         return buttonPanel;
     }

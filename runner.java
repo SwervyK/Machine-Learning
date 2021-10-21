@@ -382,8 +382,16 @@ public class runner extends JPanel {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             UpdatePolygon(reset);
-            getColissionDistance(0);
+            int ray = 1;
+            double colisionD = getColissionDistance(ray);
+            Point colission = getColission(ray, true);
+            g2.setStroke(new BasicStroke(2));
+            g2.drawLine(colission.x, colission.y, colission.x, colission.y);
+            Point colissionLenght = getColission(ray, false);
+            g2.drawLine(200, 120, colissionLenght.x + 200, colissionLenght.y + 120);
+            g2.drawString(Double.toString(colisionD), 200, 200);
             if (start) {
+                //Move(0, -1);
                 Move(playerMove);
                 aiUpdate();
             }
@@ -547,7 +555,7 @@ public class runner extends JPanel {
             return;
         }
         else {
-            if (0 < x + playerX && x + playerX + playerSize < getWidth()) {
+            if (0 < (x + playerX) && (x + playerX + playerSize) < getWidth()) {
                 playerX += x;
             }
             else {
@@ -569,35 +577,35 @@ public class runner extends JPanel {
         Point[] point = new Point[2];
         switch(d) {
             case 2:
-            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX + playerSize, playerY + playerSize/2
+            point[0] = new Point(playerX, playerY); //playerX + playerSize, playerY + playerSize/2
             point[1] = new Point(1, 0);
             return point;
             case 6:
-            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX, playerY + playerSize/2
+            point[0] = new Point(playerX, playerY); //playerX, playerY + playerSize/2
             point[1] = new Point(-1, 0);
             return point;
             case 1:
-            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX + playerSize, playerY
+            point[0] = new Point(playerX, playerY); //playerX + playerSize, playerY
             point[1] = new Point(1, -1);
             return point;
             case 7:
-            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX, playerY
+            point[0] = new Point(playerX, playerY); //playerX, playerY
             point[1] = new Point(-1, -1);
             return point;
             case 0:
-            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX + playerSize/2, playerY
+            point[0] = new Point(playerX, playerY); //playerX + playerSize/2, playerY
             point[1] = new Point(0, -1);
             return point;
             case 3:
-            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX + playerSize, playerY + playerSize
+            point[0] = new Point(playerX, playerY); //playerX + playerSize, playerY + playerSize
             point[1] = new Point(1, 1);
             return point;
             case 5:
-            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX, playerY + playerSize
+            point[0] = new Point(playerX, playerY); //playerX, playerY + playerSize
             point[1] = new Point(-1, 1);
             return point;
             case 4:
-            point[0] = new Point(playerX + playerSize/2, playerY + playerSize/2); //playerX + playerSize/2, playerY + playerSize
+            point[0] = new Point(playerX, playerY); //playerX + playerSize/2, playerY + playerSize
             point[1] = new Point(0, 1);
             return point;
             default:
@@ -623,13 +631,12 @@ public class runner extends JPanel {
             i++;
         }
         while(!getColiding(x, y) && i < rayLength);
-        return (pos)? new Point(x, y) : new Point(Math.abs(Math.abs(x * value.x) + (value.x * point.x)), Math.abs(Math.abs(y * value.y) + (value.y * point.y))); //(i < rayLength) ? new Point(x, y) : new Point(l, h)
+        return (pos) ? new Point(x, y) : new Point(Math.abs(x * value.x) + (value.x * point.x), Math.abs(y * value.y) + (value.y * point.y)); //(i < rayLength) ? new Point(x, y) : new Point(l, h)
     }
     
     public double getColissionDistance(int d) {
         double result = 0.0;
         result = Double.valueOf(Math.sqrt(Math.pow(getColission(d, false).x, 2) + Math.pow(getColission(d, false).y, 2)));
-        System.out.println(result);
         return result;
     }
     

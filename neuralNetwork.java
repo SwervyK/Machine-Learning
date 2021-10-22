@@ -80,7 +80,7 @@ public class NeuralNetwork {
     }
     
     // create w array
-    public void w() {
+    public double[] w() {
         int index = 0;
         for (int i = 0; i < w1.length; i++) {
             for (int j = 0; j < w1[0].length; j++) {
@@ -94,10 +94,11 @@ public class NeuralNetwork {
                 index++;
             }
         }
+        return w;
     }
     
     // create b array
-    public void b() {
+    public double[] b() {
         int index = 0;
         for (int i = 0; i < b1.length; i++) {
             for (int j = 0; j < b1[0].length; j++) {
@@ -111,6 +112,7 @@ public class NeuralNetwork {
                 index++;
             }
         }
+        return b;
     }
     
     // 1st laver z vales

@@ -21,6 +21,9 @@ public class runner extends JPanel {
     double clock = 0;
     static boolean start = false;
     static boolean awake = false;
+    int numNetoworks = 50;
+    NeuralNetwork[] networks = new NeuralNetwork[numNetoworks];
+    Object[] objects = new Object[numNetoworks];
     
     // classes
     static FileManager files = new FileManager();

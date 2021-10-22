@@ -2,21 +2,14 @@ import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.awt.Point;
 import javax.swing.SwingUtilities;
-
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 public class runner extends JPanel {
     
@@ -36,6 +29,7 @@ public class runner extends JPanel {
     static int direction = 0;
     static double totalError = 0.0;
     static boolean start = false;
+    static boolean awake = false;
     
     // neural network
     static double[][] x = new double[5][1];
@@ -49,80 +43,12 @@ public class runner extends JPanel {
     static double[] b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
     static double[] error = new double[out.length];
     
-    // version
-    static int currentVersion = 0;
-    // saving/files
-    String currentDir = System.getProperty("user.dir");
-    File version = new File(currentDir, "logs\\version.txt");
-    File polygonSave;
-    File wSave;
-    File bSave;
-    
-    public void File() {
-        
-    }
-    
-    public void fileManager() {
-        try {
-            if (!version.exists()) {
-                version.createNewFile();
-            }
-            Scanner scanner = new Scanner(version);
-            String nextLn = scanner.nextLine();
-            if (!nextLn.equals("0")) {
-                currentVersion = Integer.parseInt(nextLn);
-            }
-            else {
-                currentVersion = 0;
-            }
-            FileWriter writer = new FileWriter(version);
-            writer.write(String.valueOf((currentVersion + 1)));
-            writer.close();
-            scanner.close();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-    }
-    
-    public void writeData(String data, File file) {
-        try  {
-            FileWriter writer = new FileWriter(file);
-            writer.write(data);
-            writer.close();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public void writeData(String[] dataArr, File file) {
-        String data = "";
-        for (int i = 0; i < dataArr.length; i++) {
-            data += (dataArr[i] + "\n");
-        }
-        writeData(data, file);
-    }
-    
-    public String[] readData(File file) {
-        String[] result = new String[0];
-        try {
-            result = new String[(int)Files.lines(file.toPath()).count()];
-            Scanner scanner = new Scanner(file);
-            int index = 0;
-            while (scanner.hasNextLine()) {
-                result[index] = scanner.nextLine();
-                index++;
-            }
-            scanner.close();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-    
+    // classes
+    static FileManager files = new FileManager();
+    static NeuralNetwork nn = new NeuralNetwork();
+    static Object object = new Object();
+
+    /*
     public void aiStart() {
         //randomiseMatrices(x);
         randomiseMatrices(w1);
@@ -133,7 +59,7 @@ public class runner extends JPanel {
     }
     
     public void aiUpdate() {
-        double[][] answer = calculateMatrices(getInputs());
+        double[][] answer = calculateMatrices(getDirection());
         Point[] result = getRay(calculateOut(answer));
         playerMove = result[1];
     }
@@ -283,9 +209,7 @@ public class runner extends JPanel {
         return result;
     }
     
-    public double[][] getInputs() {
-        return getDirection();
-    }
+    
     
     public double[] getAnswer() {
         double[] result = new double[out.length];
@@ -348,7 +272,8 @@ public class runner extends JPanel {
         
         return result;
     }
-    
+    */
+
     enum rays {
         middleRight,
         middleLeft,
@@ -377,28 +302,20 @@ public class runner extends JPanel {
     }
     
     public void paintComponent(Graphics g) {
-        if (clock % clockSpeed == 0) {
+        if (clock % clockSpeed == 0 && awake) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             UpdatePolygon(reset);
-            //double colisionD = getColissionDistance(0);
-            //Point colission = getColission(0, true);
-            //g2.setStroke(new BasicStroke(2));
-            //g2.drawLine(colission.x, colission.y, colission.x, colission.y);
-            //Point colissionLenght = getColission(0, false);
-            //g2.drawLine(colissionLenght.x + 200, 120, colissionLenght.x + 200, colissionLenght.y + 120); //y
-            //g2.drawLine(200, 120, colissionLenght.x + 200, 120); //x
-            //g2.drawLine(200, 120, colissionLenght.x + 200, colissionLenght.y + 120); //hyp
-            //g2.drawString(Double.toString(colisionD), 200, 200);
+            Point movePos = new Point(playerX, playerY);
             if (start) {
-                Move(playerMove);
-                aiUpdate();
+                nn.randomiseNetwork();
+                int chosenDirection = nn.aiUpdate(object.getDirection(polygonX, polygonY));
+                Point velocity = object.getRay(chosenDirection)[1];
+                movePos = object.Move(velocity, polygonX, polygonY); 
             }
             reset = false;
-            //g2.drawPolygon(polygonX, polygonY, polygonX.length);
             g2.fillPolygon(polygonX, polygonY, polygonX.length);
-            //g2.drawRect(playerX, playerX, playerSize, playerSize);
-            g2.fillRect(playerX, playerY, playerSize, playerSize);
+            g2.fillRect(movePos.x, movePos.y, object.playerSize, object.playerSize);
         }
         clock++;
         repaint(0, 0, getWidth(), getHeight());
@@ -427,7 +344,7 @@ public class runner extends JPanel {
     }
     
     public void Start() {
-        aiStart();
+        nn.randomiseNetwork();
         start = true;
     }
     
@@ -441,71 +358,15 @@ public class runner extends JPanel {
     }
     
     public void Save() {
-        polygonSave = new File(currentDir, "logs\\polygonData" + currentVersion + ".txt");
-        try {
-            if (!polygonSave.exists()) {
-                polygonSave.createNewFile();
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        String[] polygonPoints = new String[points.size()];
-        for (int i = 0; i < polygonPoints.length; i++) {
-            polygonPoints[i] = String.valueOf(points.get(i));
-        }
-        writeData(polygonPoints, polygonSave);
+        files.PolygonSave(points);
     }
 
     public void SaveBrain() {
-        wSave = new File(currentDir, "logs\\weights" + currentVersion + ".txt");
-        try {
-            if (!wSave.exists()) {
-                wSave.createNewFile();
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        String[] weights = new String[w.length];
-        for (int i = 0; i < weights.length; i++) {
-            weights[i] = String.valueOf(w[i]);
-        }
-        writeData(weights, wSave);
-
-        bSave = new File(currentDir, "logs\\biases" + currentVersion + ".txt");
-        try {
-            if (!bSave.exists()) {
-                bSave.createNewFile();
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        String[] biases = new String[b.length];
-        for (int i = 0; i < biases.length; i++) {
-            weights[i] = String.valueOf(b[i]);
-        }
-        writeData(biases, bSave);
+        files.SaveingBrain(w, b);
     }
     
     public String[] FileLoad(String dialog) {
-        JFileChooser fc = new JFileChooser();
-        fc.setCurrentDirectory(version);
-        fc.setDialogTitle(dialog);
-        int returnVal = fc.showOpenDialog(runner.this);
-        File file = fc.getSelectedFile();
-        String[] data = new String[0];
-        if (returnVal == 0) {
-            try {
-                data = new String[(int)Files.lines(file.toPath()).count()];
-                data =  readData(file);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return data;
+        return files.FileLoading(dialog, runner.this);
     }
     
     public void Load() {
@@ -537,6 +398,7 @@ public class runner extends JPanel {
         }
     }
     
+    /*
     public void Move(Point p) {
         if (p == null) {
             return;
@@ -636,12 +498,12 @@ public class runner extends JPanel {
         double result = 0.0;
         result = Double.valueOf(Math.sqrt(Math.pow(getColission(d, false).x, 2) + Math.pow(getColission(d, false).y, 2)));
         return result;
-    }
+    }*/
     
     public static void main(String[] args) {
         runner r = new runner(); 
         r.Setup();
-        r.File();
+        awake = true;
     }
     
     public void Setup() {
@@ -654,7 +516,7 @@ public class runner extends JPanel {
             //frame.pack();
             frame.setVisible(true);
         });
-        fileManager();
+        files.fileSetup();
     }
     
     private void UpdatePolygon(boolean wantReset) {

@@ -38,12 +38,14 @@ public class runner extends JPanel {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             UpdatePolygon(reset);
-            if (!multiNetwork) {
-                MoveObject(object, nn, g2);
-            }
-            else {
-                for (int i = 0; i < numNetoworks; i++) {
-                    MoveObject(objects[i], networks[i], g2);
+            if (start) {
+                if (!multiNetwork) {
+                    MoveObject(object, nn, g2);
+                }
+                else {
+                    for (int i = 0; i < numNetoworks; i++) {
+                        MoveObject(objects[i], networks[i], g2);
+                    }
                 }
             }
             reset = false;

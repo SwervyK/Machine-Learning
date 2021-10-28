@@ -69,14 +69,14 @@ public class NeuralNetwork {
 
             }
         }
-        */
+        
         // no deritive
         // output layer
-        double[][] EtotalYFinal = new double[out.length][0]; 
+        double[][] EtotalYFinal = new double[out.length][1]; 
         for (int i = 0; i < EtotalYFinal.length; i++) {
             EtotalYFinal[i][0] = totalError/out[i][0];
         }
-        double[][] YFinalY = new double[out.length][0]; 
+        double[][] YFinalY = new double[out.length][1]; 
         for (int i = 0; i < YFinalY.length; i++) {
             YFinalY[i][0] = z2()[i][0]/a2f()[i][0];
         }
@@ -100,19 +100,19 @@ public class NeuralNetwork {
         }
 
         //hidden layer
-        double[][] EY = new double[hidden.length][0]; 
+        double[][] EY = new double[hidden.length][1]; 
         for (int i = 0; i < EY.length; i++) {
             EY[i][0] = (error[i]/a2f()[i][0]) * (a2f()[i][0]/z2()[i][0]);
         }
-        double[][] EHF = new double[hidden.length][0]; 
+        double[][] EHF = new double[hidden.length][1]; 
         for (int i = 0; i < EHF.length; i++) {
             EHF[i][0] = EY[i][0] * (z2()[i][0] / hidden[i][0]);
         }
-        double[][] EtotalHFinal = new double[hidden.length][0]; 
+        double[][] EtotalHFinal = new double[hidden.length][1]; 
         for (int i = 0; i < EtotalHFinal.length; i++) {
             EtotalHFinal[i][0] += EHF[i][0];
         }
-        double[][] HFinalH = new double[hidden.length][0]; 
+        double[][] HFinalH = new double[hidden.length][1]; 
         for (int i = 0; i < HFinalH.length; i++) {
             HFinalH[i][0] = a2f()[i][0]/z1()[i][0];
         }
@@ -134,7 +134,7 @@ public class NeuralNetwork {
                 w1[i][j] = w1[i][j] - learninRate * EtotalWH[i][j];
             }
         }
-        /*
+        */
         // deritive
         // output layer
         double[][] EtotalYFinal = new double[out.length][0]; 
@@ -199,8 +199,6 @@ public class NeuralNetwork {
                 w1[i][j] = w1[i][j] - learninRate * EtotalWH[i][j];
             }
         }
-        */
-        
     }
     
     // create w array

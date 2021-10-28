@@ -122,8 +122,15 @@ public class Object {
         }
         return new Point(playerX, playerY);
     }
+
+    public void Reset() {
+        playerX = 100;
+        playerY = 150;
+        direction = 0;
+    }
     
     private void Die() {
+        Reset();
         //TODO
     }
 }

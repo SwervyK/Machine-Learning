@@ -12,43 +12,53 @@ import java.util.List;
 
 public class runner extends JPanel {
     
-    // data
+    // polygon
     static List<Point> points = new ArrayList<>();
-    int[] polygonX = new int[0];
-    int[] polygonY = new int[0];
-    boolean reset = false;
-    double clockSpeed = 100;
-    double clock = 0;
+    static int[] polygonX = new int[0];
+    static int[] polygonY = new int[0];
+
+    // states
+    static boolean reset = false;
     static boolean start = false;
     static boolean awake = false;
-    int numNetoworks = 50;
-    NeuralNetwork[] networks = new NeuralNetwork[numNetoworks];
-    Object[] objects = new Object[numNetoworks];
+    static double clockSpeed = 100;
+    static double clock = 0;
+    static boolean multiNetwork = false;
     
     // classes
     static FileManager files = new FileManager();
-    static NeuralNetwork nn = new NeuralNetwork();
+    static NeuralNetwork nn = new NeuralNetwork((int)Math.random() * 100);
     static Object object = new Object();
-    
-
+    static int numNetoworks = 50;
+    static NeuralNetwork[] networks = new NeuralNetwork[numNetoworks];
+    static Object[] objects = new Object[numNetoworks];
     
     public void paintComponent(Graphics g) {
         if (clock % clockSpeed == 0 && awake) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             UpdatePolygon(reset);
-            Point movePos = new Point(100, 100);
-            if (start) {
-                int chosenDirection = nn.aiUpdate(object.getDirection(polygonX, polygonY));
-                Point velocity = object.getRay(chosenDirection)[1];
-                movePos = object.Move(velocity, polygonX, polygonY); 
+            if (!multiNetwork) {
+                MoveObject(object, nn, g2);
+            }
+            else {
+                for (int i = 0; i < numNetoworks; i++) {
+                    MoveObject(objects[i], networks[i], g2);
+                }
             }
             reset = false;
             g2.fillPolygon(polygonX, polygonY, polygonX.length);
-            g2.fillRect(movePos.x, movePos.y, object.playerSize, object.playerSize);
         }
         clock++;
         repaint(0, 0, getWidth(), getHeight());
+    }
+
+    private void MoveObject(Object o, NeuralNetwork n, Graphics2D g) {
+        int chosenDirection = n.aiUpdate(o.getDirection(polygonX, polygonY));
+        Point velocity = (start) ? o.getRay(chosenDirection)[1] : new Point(0,0);
+        Point movePos = o.Move(velocity, polygonX, polygonY);
+        g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
+        n.aiLearn();
     }
 
     private void UpdatePolygon(boolean wantReset) {
@@ -110,7 +120,19 @@ public class runner extends JPanel {
     }
     
     public void Start() {
-        nn.randomiseNetwork();
+        if (!multiNetwork) {
+            object.Reset();
+            nn.seed = (int)(Math.random() * 100);
+            nn.randomiseNetwork();
+        }
+        else {
+            for (int i = 0; i < numNetoworks; i++) {
+                objects[i].Reset();
+                networks[i].seed = (int)(Math.random() * 100);
+                networks[i].randomiseNetwork();
+            }
+        }
+
         start = true;
     }
     
@@ -122,7 +144,10 @@ public class runner extends JPanel {
     }
     
     public void Save() {
-        files.PolygonSave(points);
+        //files.PolygonSave(points);
+        nn.aiLearn();
+        start = false;
+        reset = true;
     }
 
     public void SaveBrain() {
@@ -179,6 +204,13 @@ public class runner extends JPanel {
             frame.setVisible(true);
         });
         files.fileSetup();
+        for (int i = 0; i < objects.length; i++) {
+            objects[i] = new Object();
+        }
+        for (int i = 0; i < networks.length; i++) {
+            networks[i] = new NeuralNetwork((int)(Math.random() * 100));
+            networks[i].randomiseNetwork();
+        }
     }
 }
 

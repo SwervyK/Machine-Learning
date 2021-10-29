@@ -10,7 +10,7 @@ public class NeuralNetwork {
     public int seed;
     Random random = new Random();
     double learninRate = 0.5;
-
+    
     // neural network
     double[][] x = new double[5][1];
     double[][] w1 = new double[3][5];
@@ -22,9 +22,10 @@ public class NeuralNetwork {
     double[] w = new double[(w1.length * w1[0].length) + (w2.length * w2[0].length)];
     double[] b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
     double[] error = new double[out.length];
+    double[] answer = new double[out.length];
     
     public NeuralNetwork() { }
-
+    
     public NeuralNetwork(int s) { seed = s; }
     
     public NeuralNetwork(int xNodes, int hiddenNodes, int outNodes, int s) {
@@ -66,7 +67,7 @@ public class NeuralNetwork {
         /*
         for (int i = 0; i < w2.length; i++) {
             for (int j = 0; j < w2[0].length; j++) {
-
+                
             }
         }
         
@@ -98,7 +99,7 @@ public class NeuralNetwork {
                 w2[i][j] = w2[i][j] - learninRate * EtotalW[i][j];
             }
         }
-
+        
         //hidden layer
         double[][] EY = new double[hidden.length][1]; 
         for (int i = 0; i < EY.length; i++) {
@@ -137,55 +138,54 @@ public class NeuralNetwork {
         */
         // deritive
         // output layer
-        double[][] EtotalYFinal = new double[out.length][0]; 
+        double[][] EtotalYFinal = new double[a2f().length][1]; 
         for (int i = 0; i < EtotalYFinal.length; i++) {
-            EtotalYFinal[i][0] = totalError/out[i][0];
+            //EtotalYFinal[i][0] = totalError/out[i][0];
+            //EtotalYFinal[i][0] = 2 * 1/2 * Math.pow(answer[i] - a2f()[i][0], 2 - 1) * -1 + 0;
+            EtotalYFinal[i][0] = -(answer[i] - a2f()[i][0]);
+            
         }
-        double[][] YFinalY = new double[out.length][0]; 
+        double[][] YFinalY = new double[a2f().length][1]; 
         for (int i = 0; i < YFinalY.length; i++) {
-            YFinalY[i][0] = z2()[i][0]/a2f()[i][0];
+            //YFinalY[i][0] = z2()[i][0]/a2f()[i][0];
+            YFinalY[i][0] = a2f()[i][0] * (1 - a2f()[i][0]); //(8)
         }
-        double[][] YW = new double[out.length][w2[0].length]; 
+        double[][] YW = new double[a2f().length][1];
         for (int i = 0; i < YW.length; i++) {
-            for (int j = 0; j < YW[0].length; j++) {
-                YW[i][j] = z2()[i][0]/w2[i][j];
-            }
+            //YW[i][j] = z2()[i][0]/w2[i][j];
+            YW[i][0] = a1f()[i][0];
         }
-        double[][] EtotalW = new double[YW.length][YW[0].length];
+        double[][] EtotalW = new double[a2f().length][1];
         for (int i = 0; i < YW.length; i++) {
-            for (int j = 0; j < YW[0].length; j++) {
-                EtotalW[i][j] = EtotalYFinal[i][0] * YFinalY[i][0] * YW[i][j];
-            }
+            EtotalW[i][0] = EtotalYFinal[i][0] * YFinalY[i][0] * YW[i][0];
         }
         //w2 new
         for (int i = 0; i < YW.length; i++) {
-            for (int j = 0; j < YW[0].length; j++) {
-                w2[i][j] = w2[i][j] - learninRate * EtotalW[i][j];
+            w2[i][0] = w2[i][0] - learninRate * EtotalW[i][0];
+        }
+        
+        //hidden layer
+        double[][] EY = new double[hidden.length][1]; 
+        for (int i = 0; i < EY.length; i++) {
+            EY[i][0] = -(answer[i] - a2f()[i][0]) * a2f()[i][0] * (1 - a2f()[i][0]);
+        }
+        double[][] EHF = new double[hidden.length][w1[0].length]; 
+        for (int i = 0; i < EHF.length; i++) {
+            for (int j = 0; j < EHF[0].length; j++) {
+                EHF[i][j] = EY[i][0] * w1[i][j];
             }
         }
-
-        //hidden layer
-        double[][] EY = new double[hidden.length][0]; 
-        for (int i = 0; i < EY.length; i++) {
-            EY[i][0] = (error[i]/a2f()[i][0]) * (a2f()[i][0]/z2()[i][0]);
-        }
-        double[][] EHF = new double[hidden.length][0]; 
-        for (int i = 0; i < EHF.length; i++) {
-            EHF[i][0] = EY[i][0] * (z2()[i][0] / hidden[i][0]);
-        }
-        double[][] EtotalHFinal = new double[hidden.length][0]; 
+        double[][] EtotalHFinal = new double[hidden.length][1]; 
         for (int i = 0; i < EtotalHFinal.length; i++) {
             EtotalHFinal[i][0] += EHF[i][0];
         }
-        double[][] HFinalH = new double[hidden.length][0]; 
+        double[][] HFinalH = new double[hidden.length][1]; 
         for (int i = 0; i < HFinalH.length; i++) {
-            HFinalH[i][0] = a2f()[i][0]/z1()[i][0];
+            HFinalH[i][0] = a1f()[i][0] * (1 - a1f()[i][0]);
         }
-        double[][] HW = new double[hidden.length][w1[0].length]; 
+        double[][] HW = new double[hidden.length][1]; 
         for (int i = 0; i < HW.length; i++) {
-            for (int j = 0; j < HW[0].length; j++) {
-                HW[i][j] = z1()[i][0]/w1[i][j];
-            }
+                HW[i][0] = x[i][0];
         }
         double[][] EtotalWH = new double[HW.length][HW[0].length];
         for (int i = 0; i < HW.length; i++) {
@@ -302,7 +302,8 @@ public class NeuralNetwork {
         hidden = a1f();
         out = result = a2f();
         for (int i = 0; i < a2f().length; i++) {
-            totalError += error[i] = Math.pow((a2f()[i][0] - getAnswer(input)[i]), 2);
+            answer = getAnswer(input);
+            totalError += error[i] = Math.pow((a2f()[i][0] - answer[i]), 2);
         }
         totalError /= a2f().length;
         return result;

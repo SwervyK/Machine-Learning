@@ -38,6 +38,8 @@ public class runner extends JPanel {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             UpdatePolygon(reset);
+            g2.setColor(Color.BLACK);
+            g2.fillPolygon(polygonX, polygonY, polygonX.length);
             if (start) {
                 if (!multiNetwork) {
                     MoveObject(object, nn, g2);
@@ -49,7 +51,6 @@ public class runner extends JPanel {
                 }
             }
             reset = false;
-            g2.fillPolygon(polygonX, polygonY, polygonX.length);
         }
         clock++;
         repaint(0, 0, getWidth(), getHeight());
@@ -60,6 +61,7 @@ public class runner extends JPanel {
         Point velocity = (start) ? o.getRay(chosenDirection)[1] : new Point(0,0);
         Point movePos = o.Move(velocity, polygonX, polygonY);
         g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
+        o.drawRays(g, polygonX, polygonY);
         n.aiLearn();
     }
 
@@ -147,7 +149,7 @@ public class runner extends JPanel {
     
     public void Save() {
         //files.PolygonSave(points);
-        nn.aiLearn();
+        //nn.aiLearn();
         start = false;
         reset = true;
     }

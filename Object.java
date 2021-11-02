@@ -10,6 +10,31 @@ public class Object {
     int rayLength = 100;
     int direction = 0;
     
+    public void drawRays(Graphics g, int[] polygonX, int[] polygonY) {
+        int x;
+        int y;
+        int currentDirection = direction;
+        double[][] direction = getDirection(polygonX, polygonY);
+        Point[][] ray = new Point[direction.length][2];
+        for (int i = -2; i <= 2; i++) {
+            if (currentDirection + i < 0) {
+                currentDirection += 7;
+            }
+            if (currentDirection + i > 7) {
+                currentDirection -= 7;
+            }
+            ray[i + 2] = getRay(currentDirection + i);
+        }
+        
+        for (int i = 0; i < ray.length; i++) {
+            x = (int)(playerX + (((ray[i][1].x == 0) ? direction[i][0] : direction[i][0] * Math.sqrt(2)) * ray[i][1].x));
+            y = (int)(playerY + (((ray[i][1].y == 0) ? direction[i][0] : direction[i][0] * Math.sqrt(2)) * ray[i][1].y));
+            g.setColor(Color.RED);
+            g.drawLine(playerX, playerY, x, y);
+        }
+        
+    }
+
     /**
     Gets forward directions of object 0-5
     @return the distances to objects of the network 0-5
@@ -24,7 +49,7 @@ public class Object {
             if (currentDistance + i > 7) {
                 currentDistance -= 7;
             }
-            result[i + 2][0] = getColissionDistance(currentDistance + i, polygonX, polygonY);
+            result[i + 2][0] = (int)getColissionDistance(currentDistance + i, polygonX, polygonY);
         }
         return result;
     }

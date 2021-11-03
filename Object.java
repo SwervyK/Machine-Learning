@@ -14,21 +14,23 @@ public class Object {
         int x;
         int y;
         int currentDirection = direction;
-        double[][] direction = getDirection(polygonX, polygonY);
-        Point[][] ray = new Point[direction.length][2];
+        double[][] directions = getDirection(polygonX, polygonY);
+        Point[][] ray = new Point[directions.length][2];
         for (int i = -2; i <= 2; i++) {
-            if (currentDirection + i < 0) {
-                currentDirection += 7;
+            currentDirection = direction;
+            currentDirection += i;
+            if (currentDirection < 0) {
+                currentDirection += 8;
             }
-            if (currentDirection + i > 7) {
-                currentDirection -= 7;
+            if (currentDirection > 7) {
+                currentDirection -= 8;
             }
-            ray[i + 2] = getRay(currentDirection + i);
+            ray[i + 2] = getRay(currentDirection);
         }
         
         for (int i = 0; i < ray.length; i++) {
-            x = (int)(playerX + (((ray[i][1].x == 0) ? direction[i][0] : direction[i][0] * Math.sqrt(2)) * ray[i][1].x));
-            y = (int)(playerY + (((ray[i][1].y == 0) ? direction[i][0] : direction[i][0] * Math.sqrt(2)) * ray[i][1].y));
+            x = (int)(playerX + (((ray[i][1].x == 0) ? directions[i][0] : directions[i][0] * Math.sqrt(2)) * ray[i][1].x));
+            y = (int)(playerY + (((ray[i][1].y == 0) ? directions[i][0] : directions[i][0] * Math.sqrt(2)) * ray[i][1].y));
             g.setColor(Color.RED);
             g.drawLine(playerX, playerY, x, y);
         }
@@ -43,13 +45,15 @@ public class Object {
         double[][] result = new double[5][1];
         int currentDistance = direction;
         for (int i = -2; i <= 2; i++) {
-            if (currentDistance + i < 0) {
-                currentDistance += 7;
+            currentDistance = direction;
+            currentDistance += i;
+            if (currentDistance < 0) {
+                currentDistance += 8;
             }
-            if (currentDistance + i > 7) {
-                currentDistance -= 7;
+            if (currentDistance > 7) {
+                currentDistance -= 8;
             }
-            result[i + 2][0] = (int)getColissionDistance(currentDistance + i, polygonX, polygonY);
+            result[i + 2][0] = (int)getColissionDistance(currentDistance, polygonX, polygonY);
         }
         return result;
     }

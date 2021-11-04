@@ -59,10 +59,21 @@ public class runner extends JPanel {
     private void MoveObject(Object o, NeuralNetwork n, Graphics2D g) {
         int chosenDirection = n.aiUpdate(o.getDirection(polygonX, polygonY));
         Point velocity = (start) ? o.getRay(chosenDirection)[1] : new Point(0,0);
+        //Point velocity = new Point(1, 0);
         Point movePos = o.Move(velocity, polygonX, polygonY);
         g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
         o.drawRays(g, polygonX, polygonY);
-        n.aiLearn();
+        double[] input = {0,0,1,0,0};
+        if (clock > 20000) {
+            input = new double[]{0,0,1,0,0};
+            System.out.println("1");
+        }  
+        else {
+            input = new double[]{0,0,0,0,1};
+            System.out.println("2");
+        }
+        
+        n.aiLearn(input);
     }
 
     private void UpdatePolygon(boolean wantReset) {
@@ -144,6 +155,14 @@ public class runner extends JPanel {
         System.out.println("Stoped");
         start = false;
         reset = true;
+        if (!multiNetwork) {
+            object.Reset();
+        }
+        else {
+            for (int i = 0; i < numNetoworks; i++) {
+                objects[i].Reset();
+            }
+        }
         repaint(0, 0, getWidth(), getHeight());
     }
     
@@ -152,6 +171,10 @@ public class runner extends JPanel {
         //nn.aiLearn();
         start = false;
         reset = true;
+        System.out.println("W");
+        nn.w();
+        System.out.println("B");
+        nn.b();
     }
 
     public void SaveBrain() {

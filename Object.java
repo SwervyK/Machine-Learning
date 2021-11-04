@@ -6,7 +6,7 @@ public class Object {
     // data
     public int playerSize = 10;
     public int playerX = 100;
-    public int playerY = 150;
+    public int playerY = 150; // old 150
     int rayLength = 100;
     int direction = 0;
     
@@ -14,8 +14,9 @@ public class Object {
         int x;
         int y;
         int currentDirection = direction;
-        double[][] directions = getDirection(polygonX, polygonY);
-        Point[][] ray = new Point[directions.length][2];
+        double[] distance = new double[getDirection(polygonX, polygonY).length];
+        Point[][] ray = new Point[distance.length][2];
+        double[] rayNum = new double[distance.length];
         for (int i = -2; i <= 2; i++) {
             currentDirection = direction;
             currentDirection += i;
@@ -26,11 +27,13 @@ public class Object {
                 currentDirection -= 8;
             }
             ray[i + 2] = getRay(currentDirection);
+            rayNum[i + 2] = currentDirection;
+            distance[i + 2] = getColission(currentDirection, true, polygonX, polygonY).x; 
         }
         
         for (int i = 0; i < ray.length; i++) {
-            x = (int)(playerX + (((ray[i][1].x == 0) ? directions[i][0] : directions[i][0] * Math.sqrt(2)) * ray[i][1].x));
-            y = (int)(playerY + (((ray[i][1].y == 0) ? directions[i][0] : directions[i][0] * Math.sqrt(2)) * ray[i][1].y));
+            x = (int)(playerX + (distance[i] * ray[i][1].x));
+            y = (int)(playerY + (distance[i] * ray[i][1].y));
             g.setColor(Color.RED);
             g.drawLine(playerX, playerY, x, y);
         }
@@ -53,33 +56,34 @@ public class Object {
             if (currentDistance > 7) {
                 currentDistance -= 8;
             }
-            result[i + 2][0] = (int)getColissionDistance(currentDistance, polygonX, polygonY);
+            result[i + 2][0] = getColissionDistance(currentDistance, polygonX, polygonY);
         }
         return result;
     }
     
-    public double getColissionDistance(int d, int[] polygonX, int[] polygonY) {
-        double result = 0.0;
-        result = Double.valueOf(Math.sqrt(Math.pow(getColission(d, false, polygonX, polygonY).x, 2) + Math.pow(getColission(d, false, polygonX, polygonY).y, 2)));
-        return result;
-    }
-    
-    public Point getColission(int d, boolean pos, int[] polygonX, int[] polygonY) {
+    public Point getColission(int d, boolean distance, int[] polygonX, int[] polygonY) {
         Point point = getRay(d)[0];
         Point value = getRay(d)[1];
         int x = point.x;
         int y = point.y;
         int i = 0;
-        double length = (d % 2 == 0) ? rayLength : rayLength/Math.sqrt(2);
+        double length = (d % 2 == 0) ? rayLength : rayLength / Math.sqrt(2);
         do {
             x += value.x;
             y += value.y;
             i++;
         }
         while(!getColiding(x, y, polygonX, polygonY) && i < length);
-        return (pos) ? new Point(x, y) : new Point(Math.abs(x - point.x), Math.abs(y - point.y));
+        return (distance) ? new Point(i, i) : new Point(Math.abs(x - point.x), Math.abs(y - point.y));
     }
     
+    public int getColissionDistance(int d, int[] polygonX, int[] polygonY) {
+        //int result = 0;
+        //result = (int)(Math.sqrt(Math.pow(getColission(d, false, polygonX, polygonY).x, 2) + Math.pow(getColission(d, false, polygonX, polygonY).y, 2)));
+        //return result;
+        return getColission(d, true, polygonX, polygonY).x;
+    }
+
     public Point[] getRay(int d) {
         Point[] point = new Point[2];
         switch(d) {
@@ -140,7 +144,7 @@ public class Object {
     */
     public Point Move(int x, int y, int[] polygonX, int[] polygonY) {
         direction = (((int)Math.toDegrees(Math.atan2(((y + playerY)-playerY),((x + playerX)-playerX))/45)) + 2);
-        direction = (direction < 0) ? direction + 8 : direction;
+        direction = (direction < 0) ? direction + 8 : direction; //TODO make sure its correct
         if (getColiding(playerX + x + playerSize/2, playerY + y + playerSize/2, polygonX, polygonY)) {
             Die();
             return new Point(0, 0);
@@ -154,7 +158,7 @@ public class Object {
 
     public void Reset() {
         playerX = 100;
-        playerY = 150;
+        playerY = 150; //old 150
         direction = 0;
     }
     

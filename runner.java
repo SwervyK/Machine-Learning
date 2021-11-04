@@ -23,6 +23,7 @@ public class runner extends JPanel {
     static boolean awake = false;
     static double clockSpeed = 100;
     static double clock = 0;
+    int clock2 = 0;
     static boolean multiNetwork = false;
     
     // classes
@@ -63,16 +64,16 @@ public class runner extends JPanel {
         Point movePos = o.Move(velocity, polygonX, polygonY);
         g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
         o.drawRays(g, polygonX, polygonY);
-        double[] input = {0,0,1,0,0};
-        if (clock > 20000) {
-            input = new double[]{0,0,1,0,0};
-            System.out.println("1");
-        }  
-        else {
-            input = new double[]{0,0,0,0,1};
+        double[] input = new double[5];
+        if (clock2 >= 4) {
+            input = new double[]{1,0,0,0,0};
             System.out.println("2");
+        }  
+        else if (clock < 4 && clock <= 8){
+            input = new double[]{0,0,0,0,1};
+            //System.out.println("1");
         }
-        
+        clock2++;
         n.aiLearn(input);
     }
 

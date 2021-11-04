@@ -3,7 +3,7 @@ import java.util.Random;
 
 
 public class NeuralNetwork {
-    
+    //TODO remove hardcoded array lengths
     // data
     double totalError = 0.0;
     int numDirections = 7;

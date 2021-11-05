@@ -73,7 +73,7 @@ public class NeuralNetwork {
         
         for (int i = 0; i < hidden.length; i++) {
             for (int j = 0; j < a2f().length; j++) {
-                EtotalYFinal[j][i] = -(/*answer[j]*/input[i] - a2f()[j][0]);
+                EtotalYFinal[j][i] = -(answer[j] - a2f()[j][0]);
                 YFinalY[j][i] = a2f()[j][0] * (1 - a2f()[j][0]); //(8)
                 YW[j][i] = a1f()[i][0];
                 EtotalW[j][i] = EtotalYFinal[j][i] * YFinalY[j][i] * YW[j][i];
@@ -92,7 +92,7 @@ public class NeuralNetwork {
         
         for (int i = 0; i < x.length; i++) {
             for (int j = 0; j < hidden.length; j++) {
-                EY[j][i] = -(/*answer[i]*/input[i] - a2f()[i][0]) * a2f()[i][0] * (1 - a2f()[i][0]);
+                EY[j][i] = -(answer[i] - a2f()[i][0]) * a2f()[i][0] * (1 - a2f()[i][0]);
                 EHF[j][i] = EY[j][i] * w1[j][i];
                 EtotalHFinal[j][i] += EHF[j][i];
                 HFinalH[j][i] = a1f()[j][0] * (1 - a1f()[j][0]);

@@ -119,11 +119,13 @@ public class runner extends JPanel {
         var saveButton = new JButton("Save");
         var loadButton = new JButton("Load");
         var saveBrainButton = new JButton("Save Brain");
+        var loadBrainButton = new JButton("Load Brain");
         startButton.addActionListener(e -> Start());
         stopButton.addActionListener(e -> Stop());
         saveButton.addActionListener(e -> Save());
         loadButton.addActionListener(e -> Load());
         saveBrainButton.addActionListener(e -> SaveBrain());
+        loadBrainButton.addActionListener(e -> LoadBrain());
         
         var buttonPanel = new JPanel();
         buttonPanel.add(startButton);
@@ -131,6 +133,7 @@ public class runner extends JPanel {
         buttonPanel.add(saveButton);
         buttonPanel.add(loadButton);
         buttonPanel.add(saveBrainButton);
+        buttonPanel.add(loadBrainButton);
         
         return buttonPanel;
     }
@@ -180,6 +183,10 @@ public class runner extends JPanel {
 
     public void SaveBrain() {
         files.SaveingBrain(nn.w(), nn.b());
+    }
+
+    public void LoadBrain() {
+        files.LoadBrain(3, 5, 3, runner.this);
     }
     
     public String[] FileLoad(String dialog) {

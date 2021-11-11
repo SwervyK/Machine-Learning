@@ -64,17 +64,7 @@ public class runner extends JPanel {
         Point movePos = o.Move(velocity, polygonX, polygonY);
         g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
         o.drawRays(g, polygonX, polygonY);
-        double[] input = new double[5];
-        if (clock2 >= 4) {
-            input = new double[]{1,0,0,0,0};
-            System.out.println("2");
-        }  
-        else if (clock < 4 && clock <= 8){
-            input = new double[]{0,0,0,0,1};
-            //System.out.println("1");
-        }
-        clock2++;
-        n.aiLearn(input);
+        n.aiLearn();
     }
 
     private void UpdatePolygon(boolean wantReset) {
@@ -132,7 +122,7 @@ public class runner extends JPanel {
         buttonPanel.add(stopButton);
         buttonPanel.add(saveButton);
         buttonPanel.add(loadButton);
-        buttonPanel.add(saveBrainButton);
+        //buttonPanel.add(saveBrainButton);
         buttonPanel.add(loadBrainButton);
         
         return buttonPanel;
@@ -171,14 +161,7 @@ public class runner extends JPanel {
     }
     
     public void Save() {
-        //files.PolygonSave(points);
-        //nn.aiLearn();
-        start = false;
-        reset = true;
-        System.out.println("W");
-        nn.w();
-        System.out.println("B");
-        nn.b();
+        files.PolygonSave(points);
     }
 
     public void SaveBrain() {
@@ -248,42 +231,3 @@ public class runner extends JPanel {
         }
     }
 }
-
-/*
-public void Load() {
-    JFileChooser fc = new JFileChooser();
-    fc.setCurrentDirectory(version);
-    fc.setDialogTitle("Select Polygon File");
-    int returnVal = fc.showOpenDialog(runner.this);
-    File file = fc.getSelectedFile();
-    if (returnVal == 0) {
-        try {
-            String[] polygonData = new String[(int)Files.lines(file.toPath()).count()];
-            polygonData =  readData(file);
-            for (int i = 0; i < polygonData.length; i++) {
-                int xStart = polygonData[i].indexOf("x") + 1;
-                int xEnd = polygonData[i].indexOf(",");
-                int yStart = polygonData[i].indexOf("y") + 1;
-                int yEnd = polygonData[i].indexOf("]");
-                int subX = Integer.parseInt(polygonData[i].substring(xStart + 1, xEnd));
-                int subY = Integer.parseInt(polygonData[i].substring(yStart + 1, yEnd));
-                Point point = new Point(subX, subY);
-                if (points.size() >= polygonData.length) {
-                    points.set(i, point);
-                } 
-                else {
-                    points.add(i, point);
-                }
-            }
-            if (points.size() > polygonData.length) {
-                for (int i = polygonData.length; i < points.size(); i++) {
-                    points.remove(i);
-                }
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-*/

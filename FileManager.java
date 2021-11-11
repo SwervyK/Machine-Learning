@@ -120,7 +120,7 @@ public class FileManager {
         }
         String[] biases = new String[b.length];
         for (int i = 0; i < biases.length; i++) {
-            weights[i] = String.valueOf(b[i]);
+            biases[i] = String.valueOf(b[i]);
         }
         writeData(biases, bSave);
     }
@@ -163,7 +163,7 @@ public class FileManager {
 
         int wIndex = 0;
         for (int i = 0; i < w1.length; i++) {
-            for (int j = 0; i < w1[0].length; i++) {
+            for (int j = 0; j < w1[0].length; j++) {
                 w1[i][j] = wDouble[wIndex];
                 wIndex++;
             }

@@ -144,7 +144,7 @@ public class Object {
     */
     public Point Move(int x, int y, int[] polygonX, int[] polygonY) {
         direction = (((int)Math.toDegrees(Math.atan2(((y + playerY)-playerY),((x + playerX)-playerX))/45)) + 2);
-        direction = (direction < 0) ? direction + 8 : direction; //TODO make sure its correct
+        direction = (direction < 0) ? direction + 8 : direction;
         if (getColiding(playerX + x + playerSize/2, playerY + y + playerSize/2, polygonX, polygonY)) {
             Die();
             return new Point(0, 0);

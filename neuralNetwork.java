@@ -63,7 +63,7 @@ public class NeuralNetwork {
     /**
     Changes the ai's values to make the prediction more accurate
     */
-    public void aiLearn(double[] input) {
+    public void aiLearn() {
         int outLayer1 = a2f().length;
         int outLayer2 = hidden.length;
         double[][] EtotalYFinal = new double[outLayer1][outLayer2]; 

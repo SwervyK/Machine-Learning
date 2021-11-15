@@ -161,7 +161,9 @@ public class runner extends JPanel {
     }
     
     public void Save() {
-        files.PolygonSave(points);
+        //files.PolygonSave(points);
+        double[][] i = {{0.05},{0.10}};
+        nn.ai(i);
     }
 
     public void SaveBrain() {

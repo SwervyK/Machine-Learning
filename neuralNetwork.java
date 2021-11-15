@@ -10,15 +10,25 @@ public class NeuralNetwork {
     public int seed;
     Random random = new Random();
     double learninRate = 0.5;
-    
-    // neural network
+    /*
+    // neural network 
     double[][] x = new double[5][1];
-    double[][] w1 = new double[3][5];
-    double[][] b1 = new double[3][1];
+    double[][] w1 = {{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}};//new double[3][5];
+    double[][] b1 = {{0},{0},{0}};//new double[3][1];
     double[][] hidden = new double[3][1];
-    double[][] b2 = new double[5][1];
-    double[][] w2 = new double[5][3];
+    double[][] b2 = {{0},{0},{0},{0},{0}};//new double[5][1];
+    double[][] w2 = {{0,0,0},{0,0,0},{0,0,0,},{0,0,0},{0,0,0}};//new double[5][3];
     double[][] out = new double[5][1];
+    */
+    double[][] x = new double[2][1];
+    double[][] w1 = {{0.15,0.20},{0.25,0.30}};
+    double[][] b1 = {{0.35},{0.35}};
+    double[][] hidden = new double[2][1];
+    double[][] b2 = {{0.60},{0.60}};
+    double[][] w2 = {{0.40,0.45,},{0.50,0.55}};
+    double[][] out = new double[2][1];
+
+
     double[] w = new double[(w1.length * w1[0].length) + (w2.length * w2[0].length)];
     double[] b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
     double[] error = new double[out.length];
@@ -56,6 +66,23 @@ public class NeuralNetwork {
         double[][] answer = calculateMatrices(inputs);
         int chosenDirection = calculateOut(answer);
         return chosenDirection;
+    }
+
+    public void ai(double[][] inputs) {
+        double[][] output = calculateMatrices(inputs);
+        System.out.println("Output");
+        print2D(output);
+        System.out.println("/Output");
+        double[] newAnswer = {0.01,0.99};
+        answer = newAnswer;
+        aiLearn();
+        System.out.println("Answer");
+        for (int i = 0; i < w.length; i++) {
+            System.out.print("[");
+            System.out.print(w()[i]);
+            System.out.println("]");
+        }
+        System.out.println("/Answer");
     }
     
     /**

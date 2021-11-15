@@ -24,8 +24,6 @@ public class NeuralNetwork {
     double[] error = new double[out.length];
     double[] answer = new double[out.length];
     
-    public NeuralNetwork() { }
-    
     public NeuralNetwork(int s) { seed = s; }
     
     public NeuralNetwork(int xNodes, int hiddenNodes, int outNodes, int s) {

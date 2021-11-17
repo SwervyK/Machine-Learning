@@ -28,7 +28,7 @@ public class Object {
             }
             ray[i + 2] = getRay(currentDirection);
             rayNum[i + 2] = currentDirection;
-            distance[i + 2] = getColission(currentDirection, true, polygonX, polygonY).x; 
+            distance[i + 2] = getColission(currentDirection, true, polygonX, polygonY, g).x; 
         }
         
         for (int i = 0; i < ray.length; i++) {
@@ -46,42 +46,46 @@ public class Object {
     */
     public double[][] getDirection(int[] polygonX, int[] polygonY) {
         double[][] result = new double[5][1];
-        int currentDistance = direction;
+        int currentDirection = direction;
         for (int i = -2; i <= 2; i++) {
-            currentDistance = direction;
-            currentDistance += i;
-            if (currentDistance < 0) {
-                currentDistance += 8;
+            currentDirection = direction;
+            currentDirection += i;
+            if (currentDirection < 0) {
+                currentDirection += 8;
             }
-            if (currentDistance > 7) {
-                currentDistance -= 8;
+            if (currentDirection > 7) {
+                currentDirection -= 8;
             }
-            result[i + 2][0] = getColissionDistance(currentDistance, polygonX, polygonY);
+            result[i + 2][0] = getColissionDistance(currentDirection, polygonX, polygonY);
         }
         return result;
     }
     
-    public Point getColission(int d, boolean distance, int[] polygonX, int[] polygonY) {
-        Point point = getRay(d)[0];
-        Point value = getRay(d)[1];
-        int x = point.x;
-        int y = point.y;
+    public Point getColission(int d, boolean distance, int[] polygonX, int[] polygonY, Graphics g) {
+        Point[] ray = getRay(d);
+        Point point = ray[0]; //getRay(d)[0];
+        Point value = ray[1]; //getRay(d)[1];
+        double x = point.x;
+        double y = point.y;
         int i = 0;
-        double length = (d % 2 == 0) ? rayLength : rayLength / Math.sqrt(2);
+        double length = rayLength;//(d % 2 == 0) ? rayLength : rayLength / Math.sqrt(2);
         do {
-            x += value.x;
-            y += value.y;
+            x += (double)value.x * ((d % 2 == 0) ? 1 : Math.sqrt(2)); // old: +=value.x
+            y += (double)value.y * ((d % 2 == 0) ? 1 : Math.sqrt(2)); // old: +=value.y
             i++;
+            if (g != null) {
+                g.drawLine((int)x, (int)y, (int)x, (int)y);
+            }
         }
-        while(!getColiding(x, y, polygonX, polygonY) && i < length);
-        return (distance) ? new Point(i, i) : new Point(Math.abs(x - point.x), Math.abs(y - point.y));
+        while(!getColiding((int)x, (int)y, polygonX, polygonY) && i < length);
+        return (distance) ? new Point(i, i) : new Point(Math.abs((int)x - point.x), Math.abs((int)y - point.y));
     }
     
     public int getColissionDistance(int d, int[] polygonX, int[] polygonY) {
         //int result = 0;
-        //result = (int)(Math.sqrt(Math.pow(getColission(d, false, polygonX, polygonY).x, 2) + Math.pow(getColission(d, false, polygonX, polygonY).y, 2)));
+        //result = (int)(Math.sqrt(Math.pow(getColission(d, false, polygonX, polygonY, null).x, 2) + Math.pow(getColission(d, false, polygonX, polygonY, null).y, 2)));
         //return result;
-        return getColission(d, true, polygonX, polygonY).x;
+        return getColission(d, true, polygonX, polygonY, null).x;
     }
 
     public Point[] getRay(int d) {

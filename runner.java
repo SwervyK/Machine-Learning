@@ -58,9 +58,13 @@ public class runner extends JPanel {
     }
 
     private void MoveObject(Object o, NeuralNetwork n, Graphics2D g) {
-        int chosenDirection = n.aiUpdate(o.getDirection(polygonX, polygonY));
-        Point velocity = (start) ? o.getRay(chosenDirection)[1] : new Point(0,0);
-        //Point velocity = new Point(1, 0);
+        double[][] direction = o.getDirection(polygonX, polygonY);
+        int chosenDirection = n.aiUpdate(direction);
+        System.out.println("Direction");
+        NeuralNetwork.print2D(direction);
+        System.out.println("/Direction");
+        //Point velocity = (start) ? o.getRay(chosenDirection)[1] : new Point(0,0);
+        Point velocity = new Point(1, 0);
         Point movePos = o.Move(velocity, polygonX, polygonY);
         g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
         o.drawRays(g, polygonX, polygonY);
@@ -161,9 +165,9 @@ public class runner extends JPanel {
     }
     
     public void Save() {
-        //files.PolygonSave(points);
-        double[][] i = {{0.05},{0.10}};
-        nn.ai(i);
+        files.PolygonSave(points);
+        //double[][] i = {{0.05},{0.10}};
+        //nn.ai(i);
     }
 
     public void SaveBrain() {

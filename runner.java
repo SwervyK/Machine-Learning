@@ -16,7 +16,7 @@ public class runner extends JPanel {
     static List<Point> points = new ArrayList<>();
     static int[] polygonX = new int[0];
     static int[] polygonY = new int[0];
-
+    
     // states
     static boolean reset = false;
     static boolean start = false;
@@ -28,7 +28,7 @@ public class runner extends JPanel {
     
     // classes
     static FileManager files = new FileManager();
-    static NeuralNetwork nn = new NeuralNetwork((int)Math.random() * 100);
+    static NeuralNetwork nn = new NeuralNetwork(5, 7, 5, (int)Math.random() * 100);
     static Object object = new Object();
     static int numNetoworks = 50;
     static NeuralNetwork[] networks = new NeuralNetwork[numNetoworks];
@@ -56,21 +56,21 @@ public class runner extends JPanel {
         clock++;
         repaint(0, 0, getWidth(), getHeight());
     }
-
+    
     private void MoveObject(Object o, NeuralNetwork n, Graphics2D g) {
-        double[][] direction = o.getDirection(polygonX, polygonY);
+        double[][] direction = o.getDirection(polygonX, polygonY, n);
         int chosenDirection = n.aiUpdate(direction);
-        System.out.println("Direction");
-        NeuralNetwork.print2D(direction);
-        System.out.println("/Direction");
-        //Point velocity = (start) ? o.getRay(chosenDirection)[1] : new Point(0,0);
-        Point velocity = new Point(1, 0);
+        //System.out.println("Direction");
+        //NeuralNetwork.print2D(direction);
+        //System.out.println("/Direction");
+        Point velocity = (start) ? o.getRay(chosenDirection)[1] : new Point(0,0);
+        //Point velocity = new Point(1, 0);
         Point movePos = o.Move(velocity, polygonX, polygonY);
         g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
-        o.drawRays(g, polygonX, polygonY);
+        o.drawRays(g, polygonX, polygonY, nn);
         n.aiLearn();
     }
-
+    
     private void UpdatePolygon(boolean wantReset) {
         int i = 0;
         if (!wantReset) {
@@ -90,7 +90,7 @@ public class runner extends JPanel {
             points = new ArrayList<>();
         }
     }
-
+    
     public runner() {
         addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -145,7 +145,7 @@ public class runner extends JPanel {
                 networks[i].randomiseNetwork();
             }
         }
-
+        
         start = true;
     }
     
@@ -166,14 +166,12 @@ public class runner extends JPanel {
     
     public void Save() {
         files.PolygonSave(points);
-        //double[][] i = {{0.05},{0.10}};
-        //nn.ai(i);
     }
-
+    
     public void SaveBrain() {
         files.SaveingBrain(nn.w(), nn.b());
     }
-
+    
     public void LoadBrain() {
         files.LoadBrain(3, 5, 3, runner.this);
     }

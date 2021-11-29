@@ -4,48 +4,49 @@ import java.awt.*;
 public class Object {
     
     // data
+    public boolean debug = true;
     public int playerSize = 10;
     public int playerX = 100;
     public int playerY = 150; // old 150
     int rayLength = 100;
     int direction = 0;
     
-    public void drawRays(Graphics g, int[] polygonX, int[] polygonY) {
-        int x;
-        int y;
-        int currentDirection = direction;
-        double[] distance = new double[getDirection(polygonX, polygonY).length];
-        Point[][] ray = new Point[distance.length][2];
-        double[] rayNum = new double[distance.length];
-        for (int i = -2; i <= 2; i++) {
-            currentDirection = direction;
-            currentDirection += i;
-            if (currentDirection < 0) {
-                currentDirection += 8;
+    public void drawRays(Graphics g, int[] polygonX, int[] polygonY, NeuralNetwork nn) {
+        if (debug) {
+            int x;
+            int y;
+            int currentDirection = direction;
+            double[][] distance = getDirection(polygonX, polygonY, nn);
+            Point[][] ray = new Point[distance.length][2];
+            
+            for (int i = -2; i <= 2; i++) {
+                currentDirection = direction;
+                currentDirection += i;
+                if (currentDirection < 0) {
+                    currentDirection += 8;
+                }
+                if (currentDirection > 7) {
+                    currentDirection -= 8;
+                }
+                ray[i + 2] = getRay(currentDirection);
+                
             }
-            if (currentDirection > 7) {
-                currentDirection -= 8;
+            
+            for (int i = 0; i < ray.length; i++) {
+                x = (int)(playerX + ((i % 2 == 0) ? distance[i][0] * ray[i][1].x : (distance[i][0] / Math.sqrt(2)) * ray[i][1].x));
+                y = (int)(playerY + ((i % 2 == 0) ? distance[i][0] * ray[i][1].y : (distance[i][0] / Math.sqrt(2)) * ray[i][1].y));
+                g.setColor(Color.RED);
+                g.drawLine(playerX, playerY, x, y);
             }
-            ray[i + 2] = getRay(currentDirection);
-            rayNum[i + 2] = currentDirection;
-            distance[i + 2] = getColission(currentDirection, true, polygonX, polygonY, g).x; 
         }
-        
-        for (int i = 0; i < ray.length; i++) {
-            x = (int)(playerX + (distance[i] * ray[i][1].x));
-            y = (int)(playerY + (distance[i] * ray[i][1].y));
-            g.setColor(Color.RED);
-            g.drawLine(playerX, playerY, x, y);
-        }
-        
     }
-
+    
     /**
     Gets forward directions of object 0-5
     @return the distances to objects of the network 0-5
     */
-    public double[][] getDirection(int[] polygonX, int[] polygonY) {
-        double[][] result = new double[5][1];
+    public double[][] getDirection(int[] polygonX, int[] polygonY, NeuralNetwork nn) {
+        double[][] result = new double[nn.kNumOutNodes][1];
         int currentDirection = direction;
         for (int i = -2; i <= 2; i++) {
             currentDirection = direction;
@@ -70,10 +71,11 @@ public class Object {
         int i = 0;
         double length = rayLength;//(d % 2 == 0) ? rayLength : rayLength / Math.sqrt(2);
         do {
-            x += (double)value.x * ((d % 2 == 0) ? 1 : Math.sqrt(2)); // old: +=value.x
-            y += (double)value.y * ((d % 2 == 0) ? 1 : Math.sqrt(2)); // old: +=value.y
+            x += (double)value.x * ((d % 2 == 0) ? 1 : Math.sqrt(2)/2); // old: +=value.x
+            y += (double)value.y * ((d % 2 == 0) ? 1 : Math.sqrt(2)/2); // old: +=value.y
             i++;
-            if (g != null) {
+            if (g != null && debug) {
+                g.setColor(Color.RED);
                 g.drawLine((int)x, (int)y, (int)x, (int)y);
             }
         }
@@ -87,7 +89,7 @@ public class Object {
         //return result;
         return getColission(d, true, polygonX, polygonY, null).x;
     }
-
+    
     public Point[] getRay(int d) {
         Point[] point = new Point[2];
         switch(d) {
@@ -159,7 +161,7 @@ public class Object {
         }
         return new Point(playerX, playerY);
     }
-
+    
     public void Reset() {
         playerX = 100;
         playerY = 150; //old 150

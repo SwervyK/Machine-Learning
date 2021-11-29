@@ -10,16 +10,10 @@ public class NeuralNetwork {
     public int seed;
     Random random = new Random();
     double learninRate = 0.5;
-
-    /*
-    double[][] x = new double[2][1];
-    double[][] w1 = {{0.15,0.20},{0.25,0.30}};
-    double[][] b1 = {{0.35},{0.35}};
-    double[][] hidden = new double[2][1];
-    double[][] b2 = {{0.60},{0.60}};
-    double[][] w2 = {{0.40,0.45,},{0.50,0.55}};
-    double[][] out = new double[2][1];
-    */
+    public int kNumXNoes = 5;
+    public int kNumHiddenNodes = 3;
+    public int kNumOutNodes = 5;
+    
     // neural network 
     double[][] x = new double[5][1];
     double[][] w1 = new double[3][5];
@@ -28,7 +22,7 @@ public class NeuralNetwork {
     double[][] b2 = new double[5][1];
     double[][] w2 = new double[5][3];
     double[][] out = new double[5][1];
-
+    
     double[] w = new double[(w1.length * w1[0].length) + (w2.length * w2[0].length)];
     double[] b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
     double[] error = new double[out.length];
@@ -37,13 +31,22 @@ public class NeuralNetwork {
     public NeuralNetwork(int s) { seed = s; }
     
     public NeuralNetwork(int xNodes, int hiddenNodes, int outNodes, int s) {
+        kNumXNoes = xNodes;
+        kNumHiddenNodes = hiddenNodes;
+        kNumOutNodes = outNodes;
         x = new double[xNodes][1];
         w1 = new double[hiddenNodes][xNodes];
         b1 = new double[hiddenNodes][1];
         hidden = new double[hiddenNodes][1];
-        b2 = new double[outNodes][hiddenNodes];
-        w2 = new double[outNodes][1];
+        b2 = new double[outNodes][1];
+        w2 = new double[outNodes][hiddenNodes];
         out = new double[outNodes][1];
+        
+        w = new double[(w1.length * w1[0].length) + (w2.length * w2[0].length)];
+        b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
+        error = new double[out.length];
+        answer = new double[out.length];
+        
         s = seed;
     }
     
@@ -66,23 +69,6 @@ public class NeuralNetwork {
         double[][] answer = calculateMatrices(inputs);
         int chosenDirection = calculateOut(answer);
         return chosenDirection;
-    }
-
-    public void ai(double[][] inputs) {
-        double[][] output = calculateMatrices(inputs);
-        System.out.println("Output");
-        print2D(output);
-        System.out.println("/Output");
-        double[] newAnswer = {0.01,0.99};
-        answer = newAnswer;
-        aiLearn();
-        System.out.println("Answer");
-        for (int i = 0; i < w.length; i++) {
-            System.out.print("[");
-            System.out.print(w()[i]);
-            System.out.println("]");
-        }
-        System.out.println("/Answer");
     }
     
     /**
@@ -126,42 +112,6 @@ public class NeuralNetwork {
                 w1[j][i] = w1[j][i] - learninRate * EtotalWH[j][i];
             }
         }
-        /*
-        double[][] EtotalYFinal = new double[hidden.length][a2f().length]; 
-        double[][] YFinalY = new double[hidden.length][a2f().length];
-        double[][] YW = new double[hidden.length][a2f().length];
-        double[][] EtotalW = new double[hidden.length][a2f().length];
-        
-        for (int i = 0; i < hidden.length; i++) {
-            for (int j = 0; j < a2f().length; j++) {
-                EtotalYFinal[i][j] = -(answer[j] - a2f()[j][0]);
-                YFinalY[i][j] = a2f()[j][0] * (1 - a2f()[j][0]); //(8)
-                YW[i][j] = a1f()[i][0];
-                EtotalW[i][j] = EtotalYFinal[i][j] * YFinalY[i][j] * YW[i][j];
-                w2[j][i] = w2[j][i] - learninRate * EtotalW[i][j];
-            }
-        }
-        
-        //hidden layer
-        double[][] EY = new double[x.length][hidden.length];
-        double[][] EHF = new double[x.length][hidden.length]; 
-        double[][] EtotalHFinal = new double[x.length][hidden.length]; 
-        double[][] HFinalH = new double[x.length][hidden.length]; 
-        double[][] HW = new double[x.length][hidden.length]; 
-        double[][] EtotalWH = new double[x.length][hidden.length];
-        
-        for (int i = 0; i < x.length; i++) {
-            for (int j = 0; j < hidden.length; j++) {
-                EY[i][j] = -(answer[i] - a2f()[i][0]) * a2f()[i][0] * (1 - a2f()[i][0]);
-                EHF[i][j] = EY[i][j] * w1[j][i];
-                EtotalHFinal[i][j] += EHF[i][j];
-                HFinalH[i][j] = a1f()[j][0] * (1 - a1f()[j][0]);
-                HW[i][j] = x[i][0];
-                EtotalWH[i][j] = EtotalHFinal[i][j] * HFinalH[i][j] * HW[i][j];
-                w1[j][i] = w1[j][i] - learninRate * EtotalWH[i][j];
-            }
-        }
-        */
     }
     
     // create w array

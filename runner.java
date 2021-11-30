@@ -43,21 +43,62 @@ public class runner extends JPanel {
             g2.fillPolygon(polygonX, polygonY, polygonX.length);
             if (start) {
                 if (!multiNetwork) {
-                    MoveObject(object, nn, g2);
+                    MoveObject(object, nn, g2, false);
                 }
                 else {
                     for (int i = 0; i < numNetoworks; i++) {
-                        MoveObject(objects[i], networks[i], g2);
+                        MoveObject(objects[i], networks[i], g2, false);
                     }
                 }
             }
+            else {
+                MoveObject(object, nn, g2, true);
+            }
             reset = false;
+            
+            int axesLength = 100;
+            int hash = 2;
+            Point start = new Point(200, 200);
+            float yMulti = 1.5f;
+            g2.drawLine(start.x, start.y, start.x + axesLength, start.y);
+            g2.drawLine(start.x, start.y, start.x, start.y - axesLength);
+            // create hatch marks for y axis. 
+            for (int i = 0; i < 10; i++) {
+                int x0 = start.x + hash;
+                int x1 = start.x - hash;
+                int y0 = start.y - ((i + 1) * (axesLength/10));
+                int y1 = y0;
+                g2.drawLine(x0, y0, x1, y1);
+            }
+            // and for x axis
+            for (int i = 0; i < nn.errorGraph.size() - 1; i++) {
+                int x0 = start.x + ((i + 1) * (axesLength/nn.errorGraph.size()));
+                int x1 = x0;
+                int y0 = start.y + hash;
+                int y1 = start.y - hash;
+                g2.drawLine(x0, y0, x1, y1);
+            }
+
+            g2.setStroke(new BasicStroke(1.5f));
+            g2.setColor(Color.green);
+            for (int i = 0; i < nn.errorGraph.size() - 1; i++) {
+                int x1 = ((i) * axesLength/nn.errorGraph.size()) + start.x;
+                int y1 = (int)(((int)Math.round(nn.errorGraph.get(i)) + start.y) / yMulti);
+                int x2 = ((i + 1) * axesLength/nn.errorGraph.size()) + start.x;
+                int y2 = (int)(((int)Math.round(nn.errorGraph.get(i + 1)) + start.y) / yMulti);
+                g2.drawLine(x1, y1, x2, y2);         
+            }            
         }
         clock++;
         repaint(0, 0, getWidth(), getHeight());
     }
     
-    private void MoveObject(Object o, NeuralNetwork n, Graphics2D g) {
+    private void MoveObject(Object o, NeuralNetwork n, Graphics2D g, boolean isStatic) {
+        if (isStatic) {
+            Point movePos = o.Move(new Point(0, 0), polygonX, polygonY);
+            g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
+            return;
+        }
         double[][] direction = o.getDirection(polygonX, polygonY, n);
         int chosenDirection = n.aiUpdate(direction);
         //System.out.println("Direction");
@@ -68,7 +109,6 @@ public class runner extends JPanel {
         Point movePos = o.Move(velocity, polygonX, polygonY);
         g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
         o.drawRays(g, polygonX, polygonY, nn);
-        n.aiLearn();
     }
     
     private void UpdatePolygon(boolean wantReset) {

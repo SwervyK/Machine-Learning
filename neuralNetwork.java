@@ -1,6 +1,6 @@
 import java.util.Arrays;
 import java.util.Random;
-
+import java.util.ArrayList;
 
 public class NeuralNetwork {
     //TODO remove hardcoded array lengths
@@ -13,6 +13,8 @@ public class NeuralNetwork {
     public int kNumXNoes = 5;
     public int kNumHiddenNodes = 3;
     public int kNumOutNodes = 5;
+    public int numItterations = 5;
+    public int currentItteration = 0;
     
     // neural network 
     double[][] x = new double[5][1];
@@ -26,6 +28,7 @@ public class NeuralNetwork {
     double[] w = new double[(w1.length * w1[0].length) + (w2.length * w2[0].length)];
     double[] b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
     double[] error = new double[out.length];
+    ArrayList<Double> errorGraph = new ArrayList<Double>();
     double[] answer = new double[out.length];
     
     public NeuralNetwork(int s) { seed = s; }
@@ -59,7 +62,7 @@ public class NeuralNetwork {
         randomiseMatrices(w2);
         randomiseMatrices(b2);
     }
-    
+    //TODO aireset()
     /**
     Updates ai
     @param inputs: values to passinto the network
@@ -68,6 +71,14 @@ public class NeuralNetwork {
     public int aiUpdate(double[][] inputs) {
         double[][] answer = calculateMatrices(inputs);
         int chosenDirection = calculateOut(answer);
+        errorGraph.add(totalError/(currentItteration + 1));
+        if (currentItteration >= numItterations) {
+            totalError /= numItterations;
+            System.out.println("/////" + totalError + "///////");
+            aiLearn();
+            currentItteration = 0;
+        } else System.out.println("UnError: " + totalError);
+        currentItteration++;
         return chosenDirection;
     }
     

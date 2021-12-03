@@ -17,6 +17,9 @@ public class runner extends JPanel {
     static int[] polygonX = new int[0];
     static int[] polygonY = new int[0];
     
+    // graph
+    public static int axesLength = 180;
+    
     // states
     static boolean reset = false;
     static boolean start = false;
@@ -56,10 +59,11 @@ public class runner extends JPanel {
             }
             reset = false;
             
-            int axesLength = 100;
+            
             int hash = 2;
-            Point start = new Point(200, 200);
-            float yMulti = 1.5f;
+            Point start = new Point(150, 200);
+            int yMulti = 200;
+            g2.setColor(Color.black);
             g2.drawLine(start.x, start.y, start.x + axesLength, start.y);
             g2.drawLine(start.x, start.y, start.x, start.y - axesLength);
             // create hatch marks for y axis. 
@@ -72,21 +76,23 @@ public class runner extends JPanel {
             }
             // and for x axis
             for (int i = 0; i < nn.errorGraph.size() - 1; i++) {
-                int x0 = start.x + ((i + 1) * (axesLength/nn.errorGraph.size()));
+                int x0 = (int)Math.round(start.x + ((i + 1) * (axesLength/Double.valueOf(nn.errorGraph.size()))));
                 int x1 = x0;
                 int y0 = start.y + hash;
                 int y1 = start.y - hash;
+                if (x0 > (start.x + axesLength)) {
+                    break;
+                }
                 g2.drawLine(x0, y0, x1, y1);
             }
-
             g2.setStroke(new BasicStroke(1.5f));
             g2.setColor(Color.green);
             for (int i = 0; i < nn.errorGraph.size() - 1; i++) {
-                int x1 = ((i) * axesLength/nn.errorGraph.size()) + start.x;
-                int y1 = (int)(((int)Math.round(nn.errorGraph.get(i)) + start.y) / yMulti);
-                int x2 = ((i + 1) * axesLength/nn.errorGraph.size()) + start.x;
-                int y2 = (int)(((int)Math.round(nn.errorGraph.get(i + 1)) + start.y) / yMulti);
-                g2.drawLine(x1, y1, x2, y2);         
+                int x1 = (int)Math.round(start.x + ((i) * (axesLength/Double.valueOf(nn.errorGraph.size()))));
+                int y1 = (int)Math.round(start.y - (nn.errorGraph.get(i) * yMulti));
+                int x2 = (int)Math.round(start.x + ((i + 1) * (axesLength/Double.valueOf(nn.errorGraph.size()))));
+                int y2 = (int)Math.round(start.y - (nn.errorGraph.get(i + 1) * yMulti));
+                g2.drawLine(x1, y1, x2, y2);
             }            
         }
         clock++;
@@ -99,16 +105,13 @@ public class runner extends JPanel {
             g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
             return;
         }
-        double[][] direction = o.getDirection(polygonX, polygonY, n);
-        int chosenDirection = n.aiUpdate(direction);
-        //System.out.println("Direction");
-        //NeuralNetwork.print2D(direction);
-        //System.out.println("/Direction");
+        double[][] direction = o.getDirection(polygonX, polygonY, n, g);
+        int chosenDirection = n.aiUpdate(direction, o);
         Point velocity = (start) ? o.getRay(chosenDirection)[1] : new Point(0,0);
-        //Point velocity = new Point(1, 0);
+        //Point velocity = new Point(-1, -1);
         Point movePos = o.Move(velocity, polygonX, polygonY);
-        g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
-        o.drawRays(g, polygonX, polygonY, nn);
+        g.setColor(Color.black);
+        g.fillRect(movePos.x - (o.playerSize/2), movePos.y - (o.playerSize/2), o.playerSize, o.playerSize);
     }
     
     private void UpdatePolygon(boolean wantReset) {
@@ -195,10 +198,12 @@ public class runner extends JPanel {
         reset = true;
         if (!multiNetwork) {
             object.Reset();
+            nn.Reset();
         }
         else {
             for (int i = 0; i < numNetoworks; i++) {
                 objects[i].Reset();
+                networks[i].Reset();
             }
         }
         repaint(0, 0, getWidth(), getHeight());

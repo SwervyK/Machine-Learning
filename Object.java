@@ -11,41 +11,11 @@ public class Object {
     int rayLength = 100;
     int direction = 0;
     
-    public void drawRays(Graphics g, int[] polygonX, int[] polygonY, NeuralNetwork nn) {
-        if (debug) {
-            int x;
-            int y;
-            int currentDirection = direction;
-            double[][] distance = getDirection(polygonX, polygonY, nn);
-            Point[][] ray = new Point[distance.length][2];
-            
-            for (int i = -2; i <= 2; i++) {
-                currentDirection = direction;
-                currentDirection += i;
-                if (currentDirection < 0) {
-                    currentDirection += 8;
-                }
-                if (currentDirection > 7) {
-                    currentDirection -= 8;
-                }
-                ray[i + 2] = getRay(currentDirection);
-                
-            }
-            
-            for (int i = 0; i < ray.length; i++) {
-                x = (int)(playerX + ((i % 2 == 0) ? distance[i][0] * ray[i][1].x : (distance[i][0] / Math.sqrt(2)) * ray[i][1].x));
-                y = (int)(playerY + ((i % 2 == 0) ? distance[i][0] * ray[i][1].y : (distance[i][0] / Math.sqrt(2)) * ray[i][1].y));
-                g.setColor(Color.RED);
-                g.drawLine(playerX, playerY, x, y);
-            }
-        }
-    }
-    
     /**
     Gets forward directions of object 0-5
     @return the distances to objects of the network 0-5
     */
-    public double[][] getDirection(int[] polygonX, int[] polygonY, NeuralNetwork nn) {
+    public double[][] getDirection(int[] polygonX, int[] polygonY, NeuralNetwork nn, Graphics g) {
         double[][] result = new double[nn.kNumOutNodes][1];
         int currentDirection = direction;
         for (int i = -2; i <= 2; i++) {
@@ -57,9 +27,42 @@ public class Object {
             if (currentDirection > 7) {
                 currentDirection -= 8;
             }
-            result[i + 2][0] = getColissionDistance(currentDirection, polygonX, polygonY);
+            result[i + 2][0] = getColissionDistance(currentDirection, polygonX, polygonY, g);
         }
         return result;
+    }
+    
+    public int getDirection(int d) {
+        int currentDirection = direction + d;
+        if (currentDirection < 0) {
+            currentDirection += 8;
+        }
+        if (currentDirection > 7) {
+            currentDirection -= 8;
+        }
+        return currentDirection;
+    }
+
+    public int getOppisiteDirection(int d) {
+        int currentDirection = direction + d;
+
+
+        if (currentDirection < 0) {
+            currentDirection += 8;
+        }
+        if (currentDirection > 7) {
+            currentDirection -= 8;
+        } System.out.println("Normal: " + currentDirection);
+
+        currentDirection = direction + d;
+        currentDirection += 4;
+        if (currentDirection < 0) {
+            currentDirection += 8;
+        }
+        if (currentDirection > 7) {
+            currentDirection -= 8;
+        }System.out.println(currentDirection);
+        return currentDirection;
     }
     
     public Point getColission(int d, boolean distance, int[] polygonX, int[] polygonY, Graphics g) {
@@ -83,11 +86,15 @@ public class Object {
         return (distance) ? new Point(i, i) : new Point(Math.abs((int)x - point.x), Math.abs((int)y - point.y));
     }
     
-    public int getColissionDistance(int d, int[] polygonX, int[] polygonY) {
+    public boolean getColiding(int x, int y, int[] polygonX, int[] polygonY) {
+        return new Polygon(polygonX, polygonY, polygonX.length).contains(x, y);
+    }
+    
+    public int getColissionDistance(int d, int[] polygonX, int[] polygonY, Graphics g) {
         //int result = 0;
         //result = (int)(Math.sqrt(Math.pow(getColission(d, false, polygonX, polygonY, null).x, 2) + Math.pow(getColission(d, false, polygonX, polygonY, null).y, 2)));
         //return result;
-        return getColission(d, true, polygonX, polygonY, null).x;
+        return getColission(d, true, polygonX, polygonY, g).x;
     }
     
     public Point[] getRay(int d) {
@@ -130,10 +137,6 @@ public class Object {
             break;
         }
         return point;
-    }
-    
-    public boolean getColiding(int x, int y, int[] polygonX, int[] polygonY) {
-        return new Polygon(polygonX, polygonY, polygonX.length).contains(x, y);
     }
     
     public Point Move(Point p, int[] polygonX, int[] polygonY) {

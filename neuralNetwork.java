@@ -10,7 +10,7 @@ public class NeuralNetwork {
     public int seed;
     Random random = new Random();
     double learninRate = 0.5;
-    public int kNumXNoes = 5;
+    public int kNumXNodes = 5;
     public int kNumHiddenNodes = 3;
     public int kNumOutNodes = 5;
     public int numItterations = 5;
@@ -34,7 +34,7 @@ public class NeuralNetwork {
     public NeuralNetwork(int s) { seed = s; }
     
     public NeuralNetwork(int xNodes, int hiddenNodes, int outNodes, int s) {
-        kNumXNoes = xNodes;
+        kNumXNodes = xNodes;
         kNumHiddenNodes = hiddenNodes;
         kNumOutNodes = outNodes;
         x = new double[xNodes][1];
@@ -68,16 +68,28 @@ public class NeuralNetwork {
     @param inputs: values to passinto the network
     @return the direction the network wants to go in 0-5
     */
-    public int aiUpdate(double[][] inputs) {
-        double[][] answer = calculateMatrices(inputs);
-        int chosenDirection = calculateOut(answer);
-        errorGraph.add(totalError/(currentItteration + 1));
+    public int aiUpdate(double[][] inputs, Object o) {
+        double[][] answer = getOppisiteAnswer(inputs);//getAnswer(inputs);//calculateMatrices(inputs);
+        int chosenDirection = calculateOppisiteOut(answer, o);//calculateOut(answer, o); //OLD (answer)
+        //System.out.println(chosenDirection);
+        /*
+        if (errorGraph.size() >= runner.axesLength) {
+            errorGraph.remove(0);
+            errorGraph.add(totalError/(currentItteration + 1));
+        } else {
+            errorGraph.add(totalError/(currentItteration + 1));
+        }*/
         if (currentItteration >= numItterations) {
             totalError /= numItterations;
-            System.out.println("/////" + totalError + "///////");
+            if (errorGraph.size() >= runner.axesLength) {
+                errorGraph.remove(0);
+                errorGraph.add(totalError);
+            } else {
+                errorGraph.add(totalError);
+            }
             aiLearn();
             currentItteration = 0;
-        } else System.out.println("UnError: " + totalError);
+        }
         currentItteration++;
         return chosenDirection;
     }
@@ -226,7 +238,7 @@ public class NeuralNetwork {
         hidden = a1f();
         out = result = a2f();
         for (int i = 0; i < a2f().length; i++) {
-            answer = getAnswer(input);
+            answer = getAnswer(input)[0]; //TODO NOW REMOVE THE INDEX OF THIS
             totalError += error[i] = Math.pow((a2f()[i][0] - answer[i]), 2);
         }
         totalError /= a2f().length;
@@ -234,14 +246,14 @@ public class NeuralNetwork {
     }
     
     // finds longest input
-    private int calculateOut(double[][] in) {
+    private int calculateOut(double[][] in, Object o) {
         int result = 0;
         double oldValue = 0.0, value = 0.0;
         for (int row = 0; row < in.length; row++) {
             for (int col = 0; col < in[row].length; col++) {
                 value = in[row][col];
                 if (value > oldValue) {
-                    result = row;
+                    result =  row;
                 }
                 else {
                     value = oldValue;
@@ -250,18 +262,33 @@ public class NeuralNetwork {
             }
         }
         result -= 2;
-        if (result > numDirections) {
-            result -= numDirections;
+        result = o.getDirection(result);
+        return result;
+    }
+
+    private int calculateOppisiteOut(double[][] in, Object o) {
+        int result = 0;
+        double oldValue = 0.0, value = 0.0;
+        for (int row = 0; row < in.length; row++) {
+            for (int col = 0; col < in[row].length; col++) {
+                value = in[row][col];
+                if (value > oldValue) {
+                    result =  row;
+                }
+                else {
+                    value = oldValue;
+                }
+                oldValue = value;
+            }
         }
-        if (result < 0) {
-            result += numDirections;
-        }
+        result -= 2;
+        result = o.getOppisiteDirection(result);
         return result;
     }
     
     // returns array with error for each end node
-    private double[] getAnswer(double[][] directions) {
-        double[] result = new double[out.length];
+    private double[][] getAnswer(double[][] directions) { //good
+        double[][] result = new double[out.length][1];
         int index = 0;
         double[][] values = directions;
         double old = 0.0;
@@ -275,10 +302,34 @@ public class NeuralNetwork {
         }
         for (int j = 0; j < result.length; j++) {
             if (j == index) {
-                result[j] = 1;
+                result[j][0] = 1;
             }
             else {
-                result[j] = 0;
+                result[j][0] = 0;
+            }
+        }
+        return result;
+    }
+
+    public double[][] getOppisiteAnswer(double[][] directions) {
+        double[][] result = new double[out.length][1];
+        int index = 0;
+        double[][] values = directions;
+        double old = 101.0;
+        int i = 0;
+        for (double value[] : values) {
+            if (value[0] < old) {
+                index = i;
+                old = value[0];
+            }
+            i++;
+        }
+        for (int j = 0; j < result.length; j++) {
+            if (j == index) {
+                result[j][0] = 1;
+            }
+            else {
+                result[j][0] = 0;
             }
         }
         return result;
@@ -315,5 +366,24 @@ public class NeuralNetwork {
         }
         
         return result;
+    }
+    
+    public void Reset() {
+        x = new double[kNumXNodes][1];
+        w1 = new double[kNumHiddenNodes][kNumXNodes];
+        b1 = new double[kNumHiddenNodes][1];
+        hidden = new double[kNumHiddenNodes][1];
+        b2 = new double[kNumOutNodes][1];
+        w2 = new double[kNumOutNodes][kNumHiddenNodes];
+        out = new double[kNumOutNodes][1];
+        
+        w = new double[(w1.length * w1[0].length) + (w2.length * w2[0].length)];
+        b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
+        error = new double[out.length];
+        answer = new double[out.length];
+        errorGraph = new ArrayList<Double>();
+        
+        currentItteration = 0;
+        totalError = 0.0;
     }
 }

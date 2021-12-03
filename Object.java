@@ -10,6 +10,7 @@ public class Object {
     public int playerY = 150; // old 150
     int rayLength = 100;
     int direction = 0;
+    int oldDirection = 0;
     
     /**
     Gets forward directions of object 0-5
@@ -40,28 +41,6 @@ public class Object {
         if (currentDirection > 7) {
             currentDirection -= 8;
         }
-        return currentDirection;
-    }
-
-    public int getOppisiteDirection(int d) {
-        int currentDirection = direction + d;
-
-
-        if (currentDirection < 0) {
-            currentDirection += 8;
-        }
-        if (currentDirection > 7) {
-            currentDirection -= 8;
-        } System.out.println("Normal: " + currentDirection);
-
-        currentDirection = direction + d;
-        currentDirection += 4;
-        if (currentDirection < 0) {
-            currentDirection += 8;
-        }
-        if (currentDirection > 7) {
-            currentDirection -= 8;
-        }System.out.println(currentDirection);
         return currentDirection;
     }
     

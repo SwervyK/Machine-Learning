@@ -282,7 +282,7 @@ public class NeuralNetwork {
             }
         }
         result -= 2;
-        result = o.getOppisiteDirection(result);
+        result = o.getDirection(result);
         return result;
     }
     

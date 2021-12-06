@@ -155,12 +155,12 @@ public class FileManager {
         for (int i = 0; i < bDouble.length; i++) {
             bDouble[i] = Double.parseDouble(b[i]);
         }
-
+        
         double[][] w1 = new double[x][h];
         double[][] w2 = new double[h][y];
         double[][] b1 = new double[x][1];
         double[][] b2 = new double[h][1];
-
+        
         int wIndex = 0;
         for (int i = 0; i < w1.length; i++) {
             for (int j = 0; j < w1[0].length; j++) {
@@ -174,7 +174,7 @@ public class FileManager {
                 wIndex++;
             }
         }
-
+        
         int bIndex = 0;
         for (int i = 0; i < b1.length; i++) {
             for (int j = 0; i < b1[0].length; i++) {

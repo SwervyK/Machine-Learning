@@ -4,19 +4,21 @@ import java.awt.*;
 public class Object {
     
     // data
+    public boolean debug = true;
     public int playerSize = 10;
     public int playerX = 100;
     public int playerY = 150; // old 150
     int rayLength = 100;
     int direction = 0;
+    int oldDirection = 0;
     
-    public void drawRays(Graphics g, int[] polygonX, int[] polygonY) {
-        int x;
-        int y;
+    /**
+    Gets forward directions of object 0-5
+    @return the distances to objects of the network 0-5
+    */
+    public double[][] getDirection(int[] polygonX, int[] polygonY, NeuralNetwork nn, Graphics g) {
+        double[][] result = new double[nn.kNumOutNodes][1];
         int currentDirection = direction;
-        double[] distance = new double[getDirection(polygonX, polygonY).length];
-        Point[][] ray = new Point[distance.length][2];
-        double[] rayNum = new double[distance.length];
         for (int i = -2; i <= 2; i++) {
             currentDirection = direction;
             currentDirection += i;
@@ -26,64 +28,54 @@ public class Object {
             if (currentDirection > 7) {
                 currentDirection -= 8;
             }
-            ray[i + 2] = getRay(currentDirection);
-            rayNum[i + 2] = currentDirection;
-            distance[i + 2] = getColission(currentDirection, true, polygonX, polygonY).x; 
-        }
-        
-        for (int i = 0; i < ray.length; i++) {
-            x = (int)(playerX + (distance[i] * ray[i][1].x));
-            y = (int)(playerY + (distance[i] * ray[i][1].y));
-            g.setColor(Color.RED);
-            g.drawLine(playerX, playerY, x, y);
-        }
-        
-    }
-
-    /**
-    Gets forward directions of object 0-5
-    @return the distances to objects of the network 0-5
-    */
-    public double[][] getDirection(int[] polygonX, int[] polygonY) {
-        double[][] result = new double[5][1];
-        int currentDistance = direction;
-        for (int i = -2; i <= 2; i++) {
-            currentDistance = direction;
-            currentDistance += i;
-            if (currentDistance < 0) {
-                currentDistance += 8;
-            }
-            if (currentDistance > 7) {
-                currentDistance -= 8;
-            }
-            result[i + 2][0] = getColissionDistance(currentDistance, polygonX, polygonY);
+            result[i + 2][0] = getColissionDistance(currentDirection, polygonX, polygonY, g);
         }
         return result;
     }
     
-    public Point getColission(int d, boolean distance, int[] polygonX, int[] polygonY) {
-        Point point = getRay(d)[0];
-        Point value = getRay(d)[1];
-        int x = point.x;
-        int y = point.y;
-        int i = 0;
-        double length = (d % 2 == 0) ? rayLength : rayLength / Math.sqrt(2);
-        do {
-            x += value.x;
-            y += value.y;
-            i++;
+    public int getDirection(int d) {
+        int currentDirection = direction + d;
+        if (currentDirection < 0) {
+            currentDirection += 8;
         }
-        while(!getColiding(x, y, polygonX, polygonY) && i < length);
-        return (distance) ? new Point(i, i) : new Point(Math.abs(x - point.x), Math.abs(y - point.y));
+        if (currentDirection > 7) {
+            currentDirection -= 8;
+        }
+        return currentDirection;
     }
     
-    public int getColissionDistance(int d, int[] polygonX, int[] polygonY) {
-        //int result = 0;
-        //result = (int)(Math.sqrt(Math.pow(getColission(d, false, polygonX, polygonY).x, 2) + Math.pow(getColission(d, false, polygonX, polygonY).y, 2)));
-        //return result;
-        return getColission(d, true, polygonX, polygonY).x;
+    public Point getColission(int d, boolean distance, int[] polygonX, int[] polygonY, Graphics g) {
+        Point[] ray = getRay(d);
+        Point point = ray[0]; //getRay(d)[0];
+        Point value = ray[1]; //getRay(d)[1];
+        double x = point.x;
+        double y = point.y;
+        int i = 0;
+        double length = rayLength;//(d % 2 == 0) ? rayLength : rayLength / Math.sqrt(2);
+        do {
+            x += (double)value.x * ((d % 2 == 0) ? 1 : Math.sqrt(2)/2); // old: +=value.x
+            y += (double)value.y * ((d % 2 == 0) ? 1 : Math.sqrt(2)/2); // old: +=value.y
+            i++;
+            if (g != null && debug) {
+                g.setColor(Color.RED);
+                g.drawLine((int)x, (int)y, (int)x, (int)y);
+            }
+        }
+        while(!getColiding((int)x, (int)y, polygonX, polygonY) && i < length);
+        return (distance) ? new Point(i, i) : new Point(Math.abs((int)x - point.x), Math.abs((int)y - point.y));
     }
-
+    
+    public boolean getColiding(int x, int y, int[] polygonX, int[] polygonY) {
+        return new Polygon(polygonX, polygonY, polygonX.length).contains(x, y);
+    }
+    
+    public int getColissionDistance(int d, int[] polygonX, int[] polygonY, Graphics g) {
+        //int result = 0;
+        //result = (int)(Math.sqrt(Math.pow(getColission(d, false, polygonX, polygonY, null).x, 2) + Math.pow(getColission(d, false, polygonX, polygonY, null).y, 2)));
+        //return result;
+        return getColission(d, true, polygonX, polygonY, g).x;
+    }
+    
     public Point[] getRay(int d) {
         Point[] point = new Point[2];
         switch(d) {
@@ -126,10 +118,6 @@ public class Object {
         return point;
     }
     
-    public boolean getColiding(int x, int y, int[] polygonX, int[] polygonY) {
-        return new Polygon(polygonX, polygonY, polygonX.length).contains(x, y);
-    }
-    
     public Point Move(Point p, int[] polygonX, int[] polygonY) {
         if (p == null) {
             return new Point(0 ,0);
@@ -155,7 +143,7 @@ public class Object {
         }
         return new Point(playerX, playerY);
     }
-
+    
     public void Reset() {
         playerX = 100;
         playerY = 150; //old 150

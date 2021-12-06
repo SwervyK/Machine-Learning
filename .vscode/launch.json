@@ -1,0 +1,63 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch runner",
+            "request": "launch",
+            "mainClass": "runner",
+            "projectName": "Machine-Learning_1c4d6126"
+        },
+        {
+            "type": "java",
+            "name": "Launch AnimalRunner",
+            "request": "launch",
+            "mainClass": "AnimalRunner"
+        },
+        {
+            "type": "java",
+            "name": "Launch Calculaltor",
+            "request": "launch",
+            "mainClass": "Calculaltor"
+        },
+        {
+            "type": "java",
+            "name": "Launch Input",
+            "request": "launch",
+            "mainClass": "Input"
+        },
+        {
+            "type": "java",
+            "name": "Launch Iterations",
+            "request": "launch",
+            "mainClass": "Iterations"
+        },
+        {
+            "type": "java",
+            "name": "Launch Iterations2",
+            "request": "launch",
+            "mainClass": "Iterations2"
+        },
+        {
+            "type": "java",
+            "name": "Launch LeapYear",
+            "request": "launch",
+            "mainClass": "LeapYear"
+        },
+        {
+            "type": "java",
+            "name": "Launch PrimeNumbers",
+            "request": "launch",
+            "mainClass": "PrimeNumbers"
+        }
+    ]
+}

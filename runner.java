@@ -58,42 +58,8 @@ public class runner extends JPanel {
                 MoveObject(object, nn, g2, true);
             }
             reset = false;
-            
-            
-            int hash = 2;
-            Point start = new Point(150, 200);
-            int yMulti = 200;
-            g2.setColor(Color.black);
-            g2.drawLine(start.x, start.y, start.x + axesLength, start.y);
-            g2.drawLine(start.x, start.y, start.x, start.y - axesLength);
-            // create hatch marks for y axis. 
-            for (int i = 0; i < 10; i++) {
-                int x0 = start.x + hash;
-                int x1 = start.x - hash;
-                int y0 = start.y - ((i + 1) * (axesLength/10));
-                int y1 = y0;
-                g2.drawLine(x0, y0, x1, y1);
-            }
-            // and for x axis
-            for (int i = 0; i < nn.errorGraph.size() - 1; i++) {
-                int x0 = (int)Math.round(start.x + ((i + 1) * (axesLength/Double.valueOf(nn.errorGraph.size()))));
-                int x1 = x0;
-                int y0 = start.y + hash;
-                int y1 = start.y - hash;
-                if (x0 > (start.x + axesLength)) {
-                    break;
-                }
-                g2.drawLine(x0, y0, x1, y1);
-            }
-            g2.setStroke(new BasicStroke(1.5f));
-            g2.setColor(Color.green);
-            for (int i = 0; i < nn.errorGraph.size() - 1; i++) {
-                int x1 = (int)Math.round(start.x + ((i) * (axesLength/Double.valueOf(nn.errorGraph.size()))));
-                int y1 = (int)Math.round(start.y - (nn.errorGraph.get(i) * yMulti));
-                int x2 = (int)Math.round(start.x + ((i + 1) * (axesLength/Double.valueOf(nn.errorGraph.size()))));
-                int y2 = (int)Math.round(start.y - (nn.errorGraph.get(i + 1) * yMulti));
-                g2.drawLine(x1, y1, x2, y2);
-            }            
+            MakeGraph(g2, 150, 200, axesLength, object.directionGraph, Color.RED, 7);
+            MakeGraph(g2, 150, 200, axesLength, nn.errorGraph, Color.GREEN, 1);        
         }
         clock++;
         repaint(0, 0, getWidth(), getHeight());
@@ -101,8 +67,7 @@ public class runner extends JPanel {
     
     private void MoveObject(Object o, NeuralNetwork n, Graphics2D g, boolean isStatic) {
         if (isStatic) {
-            Point movePos = o.Move(new Point(0, 0), polygonX, polygonY);
-            g.fillRect(movePos.x, movePos.y, o.playerSize, o.playerSize);
+            g.fillRect(o.playerX, o.playerY, o.playerSize, o.playerSize);
             return;
         }
         double[][] direction = o.getDirection(polygonX, polygonY, n, g);
@@ -112,6 +77,43 @@ public class runner extends JPanel {
         Point movePos = o.Move(velocity, polygonX, polygonY);
         g.setColor(Color.black);
         g.fillRect(movePos.x - (o.playerSize/2), movePos.y - (o.playerSize/2), o.playerSize, o.playerSize);
+    }
+    
+    private void MakeGraph(Graphics2D g2, int X, int Y, int length, ArrayList<Double> values, Color c, int range) {
+        int hash = 2;
+        Point start = new Point(X, Y);
+        int yMulti = length/range;
+        g2.setColor(Color.black);
+        g2.drawLine(start.x, start.y, start.x + length, start.y);
+        g2.drawLine(start.x, start.y, start.x, start.y - length);
+        // create hatch marks for y axis. 
+        for (int i = 0; i < 10; i++) {
+            int x0 = start.x + hash;
+            int x1 = start.x - hash;
+            int y0 = start.y - ((i + 1) * (length/10));
+            int y1 = y0;
+            g2.drawLine(x0, y0, x1, y1);
+        }
+        // and for x axis
+        for (int i = 0; i < values.size() - 1; i++) {
+            int x0 = (int)Math.round(start.x + ((i + 1) * (length/Double.valueOf(values.size()))));
+            int x1 = x0;
+            int y0 = start.y + hash;
+            int y1 = start.y - hash;
+            if (x0 > (start.x + length)) {
+                break;
+            }
+            g2.drawLine(x0, y0, x1, y1);
+        }
+        g2.setStroke(new BasicStroke(1.5f));
+        g2.setColor(c);
+        for (int i = 0; i < values.size() - 1; i++) {
+            int x1 = (int)Math.round(start.x + ((i ) * (length/Double.valueOf(values.size()))));
+            int y1 = (int)Math.round(start.y - (values.get(i) * yMulti));
+            int x2 = (int)Math.round(start.x + ((i + 1) * (length/Double.valueOf(values.size()))));
+            int y2 = (int)Math.round(start.y - (values.get(i + 1) * yMulti));
+            g2.drawLine(x1, y1, x2, y2);
+        }
     }
     
     private void UpdatePolygon(boolean wantReset) {

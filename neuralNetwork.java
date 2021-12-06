@@ -15,6 +15,7 @@ public class NeuralNetwork {
     public int kNumOutNodes = 5;
     public int numItterations = 5;
     public int currentItteration = 0;
+    public int treshold = 20;
     
     // neural network 
     double[][] x = new double[5][1];
@@ -69,8 +70,8 @@ public class NeuralNetwork {
     @return the direction the network wants to go in 0-5
     */
     public int aiUpdate(double[][] inputs, Object o) {
-        double[][] answer = getOppisiteAnswer(inputs);//getAnswer(inputs);//calculateMatrices(inputs);
-        int chosenDirection = calculateOppisiteOut(answer, o);//calculateOut(answer, o); //OLD (answer)
+        double[][] answer = getBetterAnswer(inputs);//getAnswer(inputs);//calculateMatrices(inputs);
+        int chosenDirection = calculateOut(answer, o);//calculateOut(answer, o); //OLD (answer)
         //System.out.println(chosenDirection);
         /*
         if (errorGraph.size() >= runner.axesLength) {
@@ -265,26 +266,6 @@ public class NeuralNetwork {
         result = o.getDirection(result);
         return result;
     }
-
-    private int calculateOppisiteOut(double[][] in, Object o) {
-        int result = 0;
-        double oldValue = 0.0, value = 0.0;
-        for (int row = 0; row < in.length; row++) {
-            for (int col = 0; col < in[row].length; col++) {
-                value = in[row][col];
-                if (value > oldValue) {
-                    result =  row;
-                }
-                else {
-                    value = oldValue;
-                }
-                oldValue = value;
-            }
-        }
-        result -= 2;
-        result = o.getDirection(result);
-        return result;
-    }
     
     // returns array with error for each end node
     private double[][] getAnswer(double[][] directions) { //good
@@ -310,26 +291,27 @@ public class NeuralNetwork {
         }
         return result;
     }
-
-    public double[][] getOppisiteAnswer(double[][] directions) {
+    
+    public double[][] getBetterAnswer(double[][] directions) {
         double[][] result = new double[out.length][1];
-        int index = 0;
         double[][] values = directions;
-        double old = 101.0;
-        int i = 0;
-        for (double value[] : values) {
-            if (value[0] < old) {
+        int index = 0;
+        double old = 0.0;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i][0] > old) {
+                if (((i!=0)?values[i-1][0]<treshold:false) || ((i!=values.length-1)?values[i+1][0]<treshold:false)) {
+                    continue;
+                }
                 index = i;
-                old = value[0];
+                old = values[i][0];
             }
-            i++;
         }
-        for (int j = 0; j < result.length; j++) {
-            if (j == index) {
-                result[j][0] = 1;
+        for (int i = 0; i < result.length; i++) {
+            if (i == index) {
+                result[i][0] = 1;
             }
             else {
-                result[j][0] = 0;
+                result[i][0] = 0;
             }
         }
         return result;

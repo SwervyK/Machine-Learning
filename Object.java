@@ -1,4 +1,5 @@
 import java.awt.Point;
+import java.util.ArrayList;
 import java.awt.*;
 
 public class Object {
@@ -11,6 +12,7 @@ public class Object {
     int rayLength = 100;
     int direction = 0;
     int oldDirection = 0;
+    public ArrayList<Double> directionGraph = new ArrayList<Double>(); 
     
     /**
     Gets forward directions of object 0-5
@@ -40,6 +42,13 @@ public class Object {
         }
         if (currentDirection > 7) {
             currentDirection -= 8;
+        }
+
+        System.out.print("Currend Dir: " + currentDirection + " :Dir: " + direction + " :Old: " + oldDirection + " :Result(Current - Old): ");
+        System.out.println(Math.abs(currentDirection-oldDirection));
+
+        if (Math.abs(currentDirection-oldDirection)>=2) {
+            return direction;
         }
         return currentDirection;
     }
@@ -131,8 +140,15 @@ public class Object {
     @param y y value to move
     */
     public Point Move(int x, int y, int[] polygonX, int[] polygonY) {
+        oldDirection = direction;
         direction = (((int)Math.toDegrees(Math.atan2(((y + playerY)-playerY),((x + playerX)-playerX))/45)) + 2);
         direction = (direction < 0) ? direction + 8 : direction;
+        if (directionGraph.size() >= runner.axesLength) {
+            directionGraph.remove(0);
+            directionGraph.add(Double.valueOf(direction));
+        } else {
+            directionGraph.add(Double.valueOf(direction));
+        }
         if (getColiding(playerX + x + playerSize/2, playerY + y + playerSize/2, polygonX, polygonY)) {
             Die();
             return new Point(0, 0);
@@ -148,6 +164,7 @@ public class Object {
         playerX = 100;
         playerY = 150; //old 150
         direction = 0;
+        directionGraph = new ArrayList<Double>();
     }
     
     private void Die() {

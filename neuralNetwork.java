@@ -5,17 +5,17 @@ import java.util.ArrayList;
 public class NeuralNetwork {
     //TODO remove hardcoded array lengths
     // data
-    double totalError = 0.0;
-    int numDirections = 7;
-    public int seed;
-    Random random = new Random();
-    double learninRate = 0.5;
-    public int kNumXNodes = 5;
-    public int kNumHiddenNodes = 3;
-    public int kNumOutNodes = 5;
-    public int numItterations = 5;
-    public int currentItteration = 0;
-    public int treshold = 20;
+    private double totalError = 0.0;
+    private int numDirections = 7;
+    private int seed;
+    private Random random = new Random();
+    private double learninRate = 0.5;
+    private int kNumXNodes = 5;
+    private int kNumHiddenNodes = 3;
+    private int kNumOutNodes = 5;
+    private int numItterations = 5;
+    private int currentItteration = 0;
+    private int treshold = 20;
     
     // neural network 
     double[][] x = new double[5][1];
@@ -71,7 +71,7 @@ public class NeuralNetwork {
     */
     public int aiUpdate(double[][] inputs, Object o) {
         double[][] answer = getBetterAnswer(inputs);//getAnswer(inputs);//calculateMatrices(inputs);
-        int chosenDirection = calculateOut(answer, o);//calculateOut(answer, o); //OLD (answer)
+        int chosenDirection = findDirection(answer, o);//calculateOut(answer, o); //OLD (answer)
         //System.out.println(chosenDirection);
         /*
         if (errorGraph.size() >= runner.axesLength) {
@@ -82,7 +82,7 @@ public class NeuralNetwork {
         }*/
         if (currentItteration >= numItterations) {
             totalError /= numItterations;
-            if (errorGraph.size() >= runner.axesLength) {
+            if (errorGraph.size() >= MachineLearning.axesLength) {
                 errorGraph.remove(0);
                 errorGraph.add(totalError);
             } else {
@@ -98,7 +98,7 @@ public class NeuralNetwork {
     /**
     Changes the ai's values to make the prediction more accurate
     */
-    public void aiLearn() {
+    private void aiLearn() {
         int outLayer1 = a2f().length;
         int outLayer2 = hidden.length;
         double[][] EtotalYFinal = new double[outLayer1][outLayer2]; 
@@ -139,7 +139,7 @@ public class NeuralNetwork {
     }
     
     // create w array
-    public double[] w() {
+    public double[] getW() {
         int index = 0;
         for (int i = 0; i < w1.length; i++) {
             for (int j = 0; j < w1[0].length; j++) {
@@ -157,7 +157,7 @@ public class NeuralNetwork {
     }
     
     // create b array
-    public double[] b() {
+    public double[] getB() {
         int index = 0;
         for (int i = 0; i < b1.length; i++) {
             for (int j = 0; j < b1[0].length; j++) {
@@ -175,26 +175,28 @@ public class NeuralNetwork {
     }
     
     // 1st laver z vales
-    public double[][] z1() {
+    /*
+    private double[][] z1() {
         double[][] result = multiplyMatrices(w1, x);
         return result;
-    }
+    }*/
     
     // 1st laver a vales
-    public double[][] a1f() {
+    private double[][] a1f() {
         double[][] result = multiplyMatrices(w1, x);
         result = f(addMatrices(result, b1));
         return result;
     }
     
-    // 2nd laver z vales
-    public double[][] z2() {
+    // 2nd laver z vales 
+    /*
+    private double[][] z2() {
         double[][] result = multiplyMatrices(w2, z1());
         return result;
-    }
+    }*/
     
     // 2nd laver a vales
-    public double[][] a2f() {
+    private double[][] a2f() {
         double[][] result = multiplyMatrices(w2, a1f());
         result = f(addMatrices(result, b2));
         return result;
@@ -247,7 +249,7 @@ public class NeuralNetwork {
     }
     
     // finds longest input
-    private int calculateOut(double[][] in, Object o) {
+    private int findDirection(double[][] in, Object o) {
         int result = 0;
         double oldValue = 0.0, value = 0.0;
         for (int row = 0; row < in.length; row++) {
@@ -292,7 +294,7 @@ public class NeuralNetwork {
         return result;
     }
     
-    public double[][] getBetterAnswer(double[][] directions) {
+    private double[][] getBetterAnswer(double[][] directions) {
         double[][] result = new double[out.length][1];
         double[][] values = directions;
         int index = 0;
@@ -328,7 +330,7 @@ public class NeuralNetwork {
     }
     
     // randomises a 2d array
-    public void randomiseMatrices(double[][] in) {
+    private void randomiseMatrices(double[][] in) {
         random.setSeed(seed);
         for (int row = 0; row < in.length; row++) {
             for (int col = 0; col < in[row].length; col++) {
@@ -338,7 +340,7 @@ public class NeuralNetwork {
     }
     
     // sigmoid function
-    public double[][] f(double[][] in) {
+    private double[][] f(double[][] in) {
         double[][] result = new double[in.length][in[0].length];
         for (int row = 0; row < in.length; row++) {
             for (int col = 0; col < in[row].length; col++) {
@@ -367,5 +369,13 @@ public class NeuralNetwork {
         
         currentItteration = 0;
         totalError = 0.0;
+    }
+
+    public int getOutNodes() {
+        return kNumOutNodes;
+    }
+
+    public void setSeed(int s) {
+        seed = s;
     }
 }

@@ -1,16 +1,9 @@
-import java.awt.BorderLayout;
-import java.awt.Graphics;
-import java.awt.Point;
-import javax.swing.SwingUtilities;
-import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class runner extends JPanel {
+public class MachineLearning extends JPanel {
     
     // polygon
     static List<Point> points = new ArrayList<>();
@@ -23,14 +16,11 @@ public class runner extends JPanel {
     // states
     static boolean reset = false;
     static boolean start = false;
-    static boolean awake = false;
     static double clockSpeed = 100;
     static double clock = 0;
-    int clock2 = 0;
     static boolean multiNetwork = false;
     
     // classes
-    static FileManager files = new FileManager();
     static NeuralNetwork nn = new NeuralNetwork(5, 7, 5, (int)Math.random() * 100);
     static Object object = new Object();
     static int numNetoworks = 50;
@@ -38,7 +28,7 @@ public class runner extends JPanel {
     static Object[] objects = new Object[numNetoworks];
     
     public void paintComponent(Graphics g) {
-        if (clock % clockSpeed == 0 && awake) {
+        if (clock % clockSpeed == 0) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             UpdatePolygon(reset);
@@ -58,28 +48,54 @@ public class runner extends JPanel {
                 MoveObject(object, nn, g2, true);
             }
             reset = false;
-            MakeGraph(g2, 150, 200, axesLength, object.directionGraph, Color.RED, 7);
+            MakeGraph(g2, 150, 200, axesLength, object.getDirectionGraph(), Color.RED, 7);
             MakeGraph(g2, 150, 200, axesLength, nn.errorGraph, Color.GREEN, 1);        
         }
         clock++;
         repaint(0, 0, getWidth(), getHeight());
     }
+
+    public static void Update() {
+        if (clock % clockSpeed == 0) {
+            UpdatePolygon(reset);
+            gui.g2.setColor(Color.BLACK);
+            gui.g2.fillPolygon(polygonX, polygonY, polygonX.length);
+            if (start) {
+                if (!multiNetwork) {
+                    MoveObject(object, nn, gui.g2, false);
+                }
+                else {
+                    for (int i = 0; i < numNetoworks; i++) {
+                        MoveObject(objects[i], networks[i], gui.g2, false);
+                    }
+                }
+            }
+            else {
+                MoveObject(object, nn, gui.g2, true);
+            }
+            reset = false;
+            MakeGraph(gui.g2, 150, 200, axesLength, object.getDirectionGraph(), Color.RED, 7);
+            MakeGraph(gui.g2, 150, 200, axesLength, nn.errorGraph, Color.GREEN, 1);        
+        }
+        clock++;
+        Update();
+    }
     
-    private void MoveObject(Object o, NeuralNetwork n, Graphics2D g, boolean isStatic) {
+    private static void MoveObject(Object o, NeuralNetwork n, Graphics2D g, boolean isStatic) {
         if (isStatic) {
-            g.fillRect(o.playerX, o.playerY, o.playerSize, o.playerSize);
+            g.fillRect(o.getPlayerPos().x, o.getPlayerPos().y, o.getPlayerSize(), o.getPlayerSize());
             return;
         }
-        double[][] direction = o.getDirection(polygonX, polygonY, n, g);
+        double[][] direction = o.getDirections(polygonX, polygonY, n, g);
         int chosenDirection = n.aiUpdate(direction, o);
         Point velocity = (start) ? o.getRay(chosenDirection)[1] : new Point(0,0);
         //Point velocity = new Point(-1, -1);
         Point movePos = o.Move(velocity, polygonX, polygonY);
         g.setColor(Color.black);
-        g.fillRect(movePos.x - (o.playerSize/2), movePos.y - (o.playerSize/2), o.playerSize, o.playerSize);
+        g.fillRect(movePos.x - (o.getPlayerSize()/2), movePos.y - (o.getPlayerSize()/2), o.getPlayerSize(), o.getPlayerSize());
     }
     
-    private void MakeGraph(Graphics2D g2, int X, int Y, int length, ArrayList<Double> values, Color c, int range) {
+    private static void MakeGraph(Graphics2D g2, int X, int Y, int length, ArrayList<Double> values, Color c, int range) {
         int hash = 2;
         Point start = new Point(X, Y);
         int yMulti = length/range;
@@ -116,7 +132,7 @@ public class runner extends JPanel {
         }
     }
     
-    private void UpdatePolygon(boolean wantReset) {
+    private static void UpdatePolygon(boolean wantReset) {
         int i = 0;
         if (!wantReset) {
             if (points.size() > 0) {
@@ -135,66 +151,25 @@ public class runner extends JPanel {
             points = new ArrayList<>();
         }
     }
-    
-    public runner() {
-        addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent e) {
-                points.add(new Point(e.getX(), e.getY()));
-                repaint(0, 0, getWidth(), getHeight());
-            }
-        });
-        
-        addMouseMotionListener(new MouseMotionAdapter() {
-            public void mouseDragged(MouseEvent e) {
-                points.add(new Point(e.getX(), e.getY()));
-                repaint(0, 0, getWidth(), getHeight());
-            }
-        });
-    }
-    
-    public JPanel Buttons() {
-        var startButton = new JButton("Start");
-        var stopButton = new JButton("Stop");
-        var saveButton = new JButton("Save");
-        var loadButton = new JButton("Load");
-        var saveBrainButton = new JButton("Save Brain");
-        var loadBrainButton = new JButton("Load Brain");
-        startButton.addActionListener(e -> Start());
-        stopButton.addActionListener(e -> Stop());
-        saveButton.addActionListener(e -> Save());
-        loadButton.addActionListener(e -> Load());
-        saveBrainButton.addActionListener(e -> SaveBrain());
-        loadBrainButton.addActionListener(e -> LoadBrain());
-        
-        var buttonPanel = new JPanel();
-        buttonPanel.add(startButton);
-        buttonPanel.add(stopButton);
-        buttonPanel.add(saveButton);
-        buttonPanel.add(loadButton);
-        //buttonPanel.add(saveBrainButton);
-        buttonPanel.add(loadBrainButton);
-        
-        return buttonPanel;
-    }
-    
-    public void Start() {
+
+    public static void Start() {
         if (!multiNetwork) {
             object.Reset();
-            nn.seed = (int)(Math.random() * 100);
+            nn.setSeed((int)(Math.random() * 100));
             nn.randomiseNetwork();
         }
         else {
             for (int i = 0; i < numNetoworks; i++) {
                 objects[i].Reset();
-                networks[i].seed = (int)(Math.random() * 100);
+                networks[i].setSeed((int)(Math.random() * 100));
                 networks[i].randomiseNetwork();
             }
         }
         
         start = true;
     }
-    
-    public void Stop() {
+
+    public static void Stop() {
         System.out.println("Stoped");
         start = false;
         reset = true;
@@ -208,26 +183,25 @@ public class runner extends JPanel {
                 networks[i].Reset();
             }
         }
-        repaint(0, 0, getWidth(), getHeight());
     }
     
-    public void Save() {
-        files.PolygonSave(points);
+    public static void Save() {
+        FileManager.PolygonSave(points);
     }
     
-    public void SaveBrain() {
-        files.SaveingBrain(nn.w(), nn.b());
+    public static void SaveBrain() {
+        FileManager.SaveingBrain(nn.getW(), nn.getB());
     }
     
-    public void LoadBrain() {
-        files.LoadBrain(3, 5, 3, runner.this);
+    public static void LoadBrain() {
+        FileManager.LoadBrain(3, 5, 3);
     }
     
-    public String[] FileLoad(String dialog) {
-        return files.FileLoading(dialog, runner.this);
+    public static String[] FileLoad(String dialog) {
+        return FileManager.FileLoading(dialog);
     }
     
-    public void Load() {
+    public static void Load() {
         try {
             String[] polygonData = FileLoad("Select Polygon Data");
             for (int i = 0; i < polygonData.length; i++) {
@@ -257,22 +231,12 @@ public class runner extends JPanel {
     }
     
     public static void main(String[] args) {
-        runner r = new runner(); 
-        r.Setup();
-        awake = true;
+        gui.Setup();
+        Setup();
+        Update();
     }
     
-    public void Setup() {
-        SwingUtilities.invokeLater(() -> {
-            var frame = new JFrame("Simple Sketching Program");
-            frame.getContentPane().add(new runner(), BorderLayout.CENTER);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.getContentPane().add(Buttons(), BorderLayout.SOUTH);
-            frame.setSize(400, 300);
-            //frame.pack();
-            frame.setVisible(true);
-        });
-        files.fileSetup();
+    public static void Setup() {
         for (int i = 0; i < objects.length; i++) {
             objects[i] = new Object();
         }
@@ -280,5 +244,6 @@ public class runner extends JPanel {
             networks[i] = new NeuralNetwork((int)(Math.random() * 100));
             networks[i].randomiseNetwork();
         }
+        FileManager.fileSetup();
     }
 }

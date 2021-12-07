@@ -5,21 +5,30 @@ import java.awt.*;
 public class Object {
     
     // data
-    public boolean debug = true;
-    public int playerSize = 10;
-    public int playerX = 100;
-    public int playerY = 150; // old 150
-    int rayLength = 100;
-    int direction = 0;
-    int oldDirection = 0;
-    public ArrayList<Double> directionGraph = new ArrayList<Double>(); 
+    private boolean debug = true;
+    private int playerSize = 10;
+    private int playerX = 100;
+    private int playerY = 150;
+    private Point playerStart = new Point(100, 150);
+    private int rayLength = 100;
+    private int direction = 0;
+    private int oldDirection = 0;
+    private ArrayList<Double> directionGraph = new ArrayList<Double>(); 
     
+    public Object() { }
+
+    public Object(int StartX, int StartY) {
+        playerStart = new Point(StartX, StartY);
+        playerX = StartX;
+        playerY = StartY;
+    }
+
     /**
     Gets forward directions of object 0-5
     @return the distances to objects of the network 0-5
     */
-    public double[][] getDirection(int[] polygonX, int[] polygonY, NeuralNetwork nn, Graphics g) {
-        double[][] result = new double[nn.kNumOutNodes][1];
+    public double[][] getDirections(int[] polygonX, int[] polygonY, NeuralNetwork nn, Graphics g) {
+        double[][] result = new double[nn.getOutNodes()][1];
         int currentDirection = direction;
         for (int i = -2; i <= 2; i++) {
             currentDirection = direction;
@@ -43,17 +52,17 @@ public class Object {
         if (currentDirection > 7) {
             currentDirection -= 8;
         }
-
+        
         System.out.print("Currend Dir: " + currentDirection + " :Dir: " + direction + " :Old: " + oldDirection + " :Result(Current - Old): ");
         System.out.println(Math.abs(currentDirection-oldDirection));
-
+        
         if (Math.abs(currentDirection-oldDirection)>=2) {
             return direction;
         }
         return currentDirection;
     }
     
-    public Point getColission(int d, boolean distance, int[] polygonX, int[] polygonY, Graphics g) {
+    private Point getColissionPoint(int d, boolean distance, int[] polygonX, int[] polygonY, Graphics g) {
         Point[] ray = getRay(d);
         Point point = ray[0]; //getRay(d)[0];
         Point value = ray[1]; //getRay(d)[1];
@@ -74,15 +83,12 @@ public class Object {
         return (distance) ? new Point(i, i) : new Point(Math.abs((int)x - point.x), Math.abs((int)y - point.y));
     }
     
-    public boolean getColiding(int x, int y, int[] polygonX, int[] polygonY) {
+    private boolean getColiding(int x, int y, int[] polygonX, int[] polygonY) {
         return new Polygon(polygonX, polygonY, polygonX.length).contains(x, y);
     }
     
-    public int getColissionDistance(int d, int[] polygonX, int[] polygonY, Graphics g) {
-        //int result = 0;
-        //result = (int)(Math.sqrt(Math.pow(getColission(d, false, polygonX, polygonY, null).x, 2) + Math.pow(getColission(d, false, polygonX, polygonY, null).y, 2)));
-        //return result;
-        return getColission(d, true, polygonX, polygonY, g).x;
+    private int getColissionDistance(int d, int[] polygonX, int[] polygonY, Graphics g) {
+        return getColissionPoint(d, true, polygonX, polygonY, g).x;
     }
     
     public Point[] getRay(int d) {
@@ -143,7 +149,7 @@ public class Object {
         oldDirection = direction;
         direction = (((int)Math.toDegrees(Math.atan2(((y + playerY)-playerY),((x + playerX)-playerX))/45)) + 2);
         direction = (direction < 0) ? direction + 8 : direction;
-        if (directionGraph.size() >= runner.axesLength) {
+        if (directionGraph.size() >= MachineLearning.axesLength) {
             directionGraph.remove(0);
             directionGraph.add(Double.valueOf(direction));
         } else {
@@ -161,8 +167,8 @@ public class Object {
     }
     
     public void Reset() {
-        playerX = 100;
-        playerY = 150; //old 150
+        playerX = playerStart.x;
+        playerY = playerStart.y;
         direction = 0;
         directionGraph = new ArrayList<Double>();
     }
@@ -170,5 +176,17 @@ public class Object {
     private void Die() {
         Reset();
         //TODO
+    }
+    
+    public Point getPlayerPos() {
+        return new Point(playerX, playerY);
+    }
+    
+    public ArrayList<Double> getDirectionGraph() {
+        return directionGraph;
+    }
+    
+    public int getPlayerSize() {
+        return playerSize;
     }
 }

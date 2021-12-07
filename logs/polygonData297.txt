@@ -1,0 +1,1 @@
+java.awt.Point[x=29,y=14]

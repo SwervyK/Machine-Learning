@@ -8,14 +8,14 @@ import java.util.Scanner;
 
 public class FileManager {
     // saving/files
-    static int currentVersion = 0;
-    String currentDir = System.getProperty("user.dir");
-    File version = new File(currentDir, "logs\\version.txt");
-    File polygonSave;
-    File wSave;
-    File bSave;
+    private static int currentVersion = 0;
+    private static String currentDir = System.getProperty("user.dir");
+    private static File version = new File(currentDir, "logs\\version.txt");
+    private static File polygonSave;
+    private static File wSave;
+    private static File bSave;
     
-    public void fileSetup() {
+    public static void fileSetup() {
         try {
             if (!version.exists()) {
                 version.createNewFile();
@@ -39,7 +39,7 @@ public class FileManager {
         
     }
     
-    public void writeData(String data, File file) {
+    private static void writeData(String data, File file) {
         try  {
             FileWriter writer = new FileWriter(file);
             writer.write(data);
@@ -50,7 +50,7 @@ public class FileManager {
         }
     }
     
-    public void writeData(String[] dataArr, File file) {
+    private static void writeData(String[] dataArr, File file) {
         String data = "";
         for (int i = 0; i < dataArr.length; i++) {
             data += (dataArr[i] + "\n");
@@ -58,7 +58,7 @@ public class FileManager {
         writeData(data, file);
     }
     
-    public String[] readData(File file) {
+    private static String[] readData(File file) {
         String[] result = new String[0];
         try {
             result = new String[(int)Files.lines(file.toPath()).count()];
@@ -76,7 +76,7 @@ public class FileManager {
         return result;
     }
     
-    public void PolygonSave(List<Point> points) {
+    public static void PolygonSave(List<Point> points) {
         polygonSave = new File(currentDir, "logs\\polygonData" + currentVersion + ".txt");
         try {
             if (!polygonSave.exists()) {
@@ -93,7 +93,7 @@ public class FileManager {
         writeData(polygonPoints, polygonSave);
     }
     
-    public void SaveingBrain(double[] w, double[] b) {
+    public static void SaveingBrain(double[] w, double[] b) {
         wSave = new File(currentDir, "logs\\weights" + currentVersion + ".txt");
         try {
             if (!wSave.exists()) {
@@ -125,11 +125,11 @@ public class FileManager {
         writeData(biases, bSave);
     }
     
-    public String[] FileLoading(String dialog, runner r) {
+    public static String[] FileLoading(String dialog) {
         JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(version);
         fc.setDialogTitle(dialog);
-        int returnVal = fc.showOpenDialog(r);
+        int returnVal = fc.showOpenDialog(gui.getFrame());
         File file = fc.getSelectedFile();
         String[] data = new String[0];
         if (returnVal == 0) {
@@ -144,13 +144,13 @@ public class FileManager {
         return data;
     }
     
-    public double[][][] LoadBrain(int x, int h, int y, runner r) {
-        String[] w = FileLoading("Weights values", r);
+    public static double[][][] LoadBrain(int x, int h, int y) {
+        String[] w = FileLoading("Weights values");
         double[] wDouble = new double[w.length];
         for (int i = 0; i < wDouble.length; i++) {
             wDouble[i] = Double.parseDouble(w[i]);
         }
-        String[] b = FileLoading("Bias values", r);
+        String[] b = FileLoading("Bias values");
         double[] bDouble = new double[b.length];
         for (int i = 0; i < bDouble.length; i++) {
             bDouble[i] = Double.parseDouble(b[i]);

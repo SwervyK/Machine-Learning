@@ -27,7 +27,7 @@ public class Object {
     Gets forward directions of object 0-5
     @return the distances to objects of the network 0-5
     */
-    public double[][] getDirections(int[] polygonX, int[] polygonY, NeuralNetwork nn, Graphics g) {
+    public double[][] getDirections(int[] polygonX, int[] polygonY, NeuralNetwork nn) {
         double[][] result = new double[nn.getOutNodes()][1];
         int currentDirection = direction;
         for (int i = -2; i <= 2; i++) {
@@ -39,7 +39,7 @@ public class Object {
             if (currentDirection > 7) {
                 currentDirection -= 8;
             }
-            result[i + 2][0] = getColissionDistance(currentDirection, polygonX, polygonY, g);
+            result[i + 2][0] = getColissionDistance(currentDirection, polygonX, polygonY);
         }
         return result;
     }
@@ -53,8 +53,8 @@ public class Object {
             currentDirection -= 8;
         }
         
-        System.out.print("Currend Dir: " + currentDirection + " :Dir: " + direction + " :Old: " + oldDirection + " :Result(Current - Old): ");
-        System.out.println(Math.abs(currentDirection-oldDirection));
+        //System.out.print("Currend Dir: " + currentDirection + " :Dir: " + direction + " :Old: " + oldDirection + " :Result(Current - Old): ");
+        //System.out.println(Math.abs(currentDirection-oldDirection));
         
         if (Math.abs(currentDirection-oldDirection)>=2) {
             return direction;
@@ -62,7 +62,7 @@ public class Object {
         return currentDirection;
     }
     
-    private Point getColissionPoint(int d, boolean distance, int[] polygonX, int[] polygonY, Graphics g) {
+    private Point getColissionPoint(int d, boolean distance, int[] polygonX, int[] polygonY) {
         Point[] ray = getRay(d);
         Point point = ray[0]; //getRay(d)[0];
         Point value = ray[1]; //getRay(d)[1];
@@ -74,9 +74,8 @@ public class Object {
             x += (double)value.x * ((d % 2 == 0) ? 1 : Math.sqrt(2)/2); // old: +=value.x
             y += (double)value.y * ((d % 2 == 0) ? 1 : Math.sqrt(2)/2); // old: +=value.y
             i++;
-            if (g != null && debug) {
-                g.setColor(Color.RED);
-                g.drawLine((int)x, (int)y, (int)x, (int)y);
+            if (debug) {
+                MachineLearning.debugLines((int)x, (int)y);
             }
         }
         while(!getColiding((int)x, (int)y, polygonX, polygonY) && i < length);
@@ -87,8 +86,8 @@ public class Object {
         return new Polygon(polygonX, polygonY, polygonX.length).contains(x, y);
     }
     
-    private int getColissionDistance(int d, int[] polygonX, int[] polygonY, Graphics g) {
-        return getColissionPoint(d, true, polygonX, polygonY, g).x;
+    private int getColissionDistance(int d, int[] polygonX, int[] polygonY) {
+        return getColissionPoint(d, true, polygonX, polygonY).x;
     }
     
     public Point[] getRay(int d) {

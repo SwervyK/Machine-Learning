@@ -6,7 +6,6 @@ public class NeuralNetwork {
     //TODO remove hardcoded array lengths
     // data
     private double totalError = 0.0;
-    private int numDirections = 7;
     private int seed;
     private Random random = new Random();
     private double learninRate = 0.5;
@@ -68,18 +67,22 @@ public class NeuralNetwork {
     Updates ai
     @param inputs: values to passinto the network
     @return the direction the network wants to go in 0-5
-    */
-    public int aiUpdate(double[][] inputs, Object o) {
-        double[][] answer = getBetterAnswer(inputs);//getAnswer(inputs);//calculateMatrices(inputs);
-        int chosenDirection = findDirection(answer, o);//calculateOut(answer, o); //OLD (answer)
-        //System.out.println(chosenDirection);
-        /*
-        if (errorGraph.size() >= runner.axesLength) {
+    **/
+    public int aiUpdate(double[][] inputs, boolean wantAi, Object o) {
+        double[][] answer = {{0},{0},{0},{0},{0}};
+        if (wantAi) {
+            answer = calculateMatrices(inputs);
+        }
+        else {
+            answer = getBetterAnswer(inputs);
+        }
+        int chosenDirection = findDirection(answer, o);
+        if (errorGraph.size() >= MachineLearning.axesLength) {
             errorGraph.remove(0);
             errorGraph.add(totalError/(currentItteration + 1));
         } else {
             errorGraph.add(totalError/(currentItteration + 1));
-        }*/
+        }
         if (currentItteration >= numItterations) {
             totalError /= numItterations;
             if (errorGraph.size() >= MachineLearning.axesLength) {
@@ -241,7 +244,9 @@ public class NeuralNetwork {
         hidden = a1f();
         out = result = a2f();
         for (int i = 0; i < a2f().length; i++) {
-            answer = getAnswer(input)[0]; //TODO NOW REMOVE THE INDEX OF THIS
+            for (int j = 0; j < answer.length; j++) {
+                answer[j] = getBetterAnswer(input)[j][0];
+            }
             totalError += error[i] = Math.pow((a2f()[i][0] - answer[i]), 2);
         }
         totalError /= a2f().length;
@@ -269,7 +274,7 @@ public class NeuralNetwork {
         return result;
     }
     
-    // returns array with error for each end node
+    /*
     private double[][] getAnswer(double[][] directions) { //good
         double[][] result = new double[out.length][1];
         int index = 0;
@@ -292,7 +297,7 @@ public class NeuralNetwork {
             }
         }
         return result;
-    }
+    } */
     
     private double[][] getBetterAnswer(double[][] directions) {
         double[][] result = new double[out.length][1];

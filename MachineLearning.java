@@ -1,9 +1,8 @@
-import javax.swing.JPanel;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MachineLearning extends JPanel {
+public class MachineLearning {
     
     // polygon
     static List<Point> points = new ArrayList<>();
@@ -16,9 +15,9 @@ public class MachineLearning extends JPanel {
     // states
     static boolean reset = false;
     static boolean start = false;
-    static double clockSpeed = 100;
-    static double clock = 0;
+    static double clockSpeed = 20;
     static boolean multiNetwork = false;
+    static boolean ai = true;
     
     // classes
     static NeuralNetwork nn = new NeuralNetwork(5, 7, 5, (int)Math.random() * 100);
@@ -27,109 +26,43 @@ public class MachineLearning extends JPanel {
     static NeuralNetwork[] networks = new NeuralNetwork[numNetoworks];
     static Object[] objects = new Object[numNetoworks];
     
-    public void paintComponent(Graphics g) {
-        if (clock % clockSpeed == 0) {
-            super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g;
-            UpdatePolygon(reset);
-            g2.setColor(Color.BLACK);
-            g2.fillPolygon(polygonX, polygonY, polygonX.length);
-            if (start) {
-                if (!multiNetwork) {
-                    MoveObject(object, nn, g2, false);
-                }
-                else {
-                    for (int i = 0; i < numNetoworks; i++) {
-                        MoveObject(objects[i], networks[i], g2, false);
-                    }
-                }
-            }
-            else {
-                MoveObject(object, nn, g2, true);
-            }
-            reset = false;
-            MakeGraph(g2, 150, 200, axesLength, object.getDirectionGraph(), Color.RED, 7);
-            MakeGraph(g2, 150, 200, axesLength, nn.errorGraph, Color.GREEN, 1);        
-        }
-        clock++;
-        repaint(0, 0, getWidth(), getHeight());
-    }
-
     public static void Update() {
-        if (clock % clockSpeed == 0) {
-            UpdatePolygon(reset);
-            gui.g2.setColor(Color.BLACK);
-            gui.g2.fillPolygon(polygonX, polygonY, polygonX.length);
-            if (start) {
-                if (!multiNetwork) {
-                    MoveObject(object, nn, gui.g2, false);
-                }
-                else {
-                    for (int i = 0; i < numNetoworks; i++) {
-                        MoveObject(objects[i], networks[i], gui.g2, false);
-                    }
-                }
+        UpdatePolygon(reset);
+        gui.drawPolygon(polygonX, polygonY, Color.BLACK);
+        if (start) {
+            if (!multiNetwork) {
+                MoveObject(object, nn, false);
             }
             else {
-                MoveObject(object, nn, gui.g2, true);
+                for (int i = 0; i < numNetoworks; i++) {
+                    MoveObject(objects[i], networks[i], false);
+                }
             }
-            reset = false;
-            MakeGraph(gui.g2, 150, 200, axesLength, object.getDirectionGraph(), Color.RED, 7);
-            MakeGraph(gui.g2, 150, 200, axesLength, nn.errorGraph, Color.GREEN, 1);        
         }
-        clock++;
+        else {
+            MoveObject(object, nn, true);
+        }
+        reset = false;
+        gui.MakeGraph(150, 200, axesLength, object.getDirectionGraph(), Color.RED, 7);
+        gui.MakeGraph(150, 200, axesLength, nn.errorGraph, Color.GREEN, 1);
+        try {
+            Thread.sleep((long)clockSpeed);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Update();
     }
     
-    private static void MoveObject(Object o, NeuralNetwork n, Graphics2D g, boolean isStatic) {
+    private static void MoveObject(Object o, NeuralNetwork n, boolean isStatic) {
         if (isStatic) {
-            g.fillRect(o.getPlayerPos().x, o.getPlayerPos().y, o.getPlayerSize(), o.getPlayerSize());
             return;
         }
-        double[][] direction = o.getDirections(polygonX, polygonY, n, g);
-        int chosenDirection = n.aiUpdate(direction, o);
+        double[][] direction = o.getDirections(polygonX, polygonY, n);
+        int chosenDirection = n.aiUpdate(direction, ai, o);
         Point velocity = (start) ? o.getRay(chosenDirection)[1] : new Point(0,0);
         //Point velocity = new Point(-1, -1);
         Point movePos = o.Move(velocity, polygonX, polygonY);
-        g.setColor(Color.black);
-        g.fillRect(movePos.x - (o.getPlayerSize()/2), movePos.y - (o.getPlayerSize()/2), o.getPlayerSize(), o.getPlayerSize());
-    }
-    
-    private static void MakeGraph(Graphics2D g2, int X, int Y, int length, ArrayList<Double> values, Color c, int range) {
-        int hash = 2;
-        Point start = new Point(X, Y);
-        int yMulti = length/range;
-        g2.setColor(Color.black);
-        g2.drawLine(start.x, start.y, start.x + length, start.y);
-        g2.drawLine(start.x, start.y, start.x, start.y - length);
-        // create hatch marks for y axis. 
-        for (int i = 0; i < 10; i++) {
-            int x0 = start.x + hash;
-            int x1 = start.x - hash;
-            int y0 = start.y - ((i + 1) * (length/10));
-            int y1 = y0;
-            g2.drawLine(x0, y0, x1, y1);
-        }
-        // and for x axis
-        for (int i = 0; i < values.size() - 1; i++) {
-            int x0 = (int)Math.round(start.x + ((i + 1) * (length/Double.valueOf(values.size()))));
-            int x1 = x0;
-            int y0 = start.y + hash;
-            int y1 = start.y - hash;
-            if (x0 > (start.x + length)) {
-                break;
-            }
-            g2.drawLine(x0, y0, x1, y1);
-        }
-        g2.setStroke(new BasicStroke(1.5f));
-        g2.setColor(c);
-        for (int i = 0; i < values.size() - 1; i++) {
-            int x1 = (int)Math.round(start.x + ((i ) * (length/Double.valueOf(values.size()))));
-            int y1 = (int)Math.round(start.y - (values.get(i) * yMulti));
-            int x2 = (int)Math.round(start.x + ((i + 1) * (length/Double.valueOf(values.size()))));
-            int y2 = (int)Math.round(start.y - (values.get(i + 1) * yMulti));
-            g2.drawLine(x1, y1, x2, y2);
-        }
+        gui.drawCube(movePos.x - (o.getPlayerSize()/2), movePos.y - (o.getPlayerSize()/2), o.getPlayerSize(), o.getPlayerSize(), Color.BLACK);
     }
     
     private static void UpdatePolygon(boolean wantReset) {
@@ -151,7 +84,7 @@ public class MachineLearning extends JPanel {
             points = new ArrayList<>();
         }
     }
-
+    
     public static void Start() {
         if (!multiNetwork) {
             object.Reset();
@@ -168,7 +101,7 @@ public class MachineLearning extends JPanel {
         
         start = true;
     }
-
+    
     public static void Stop() {
         System.out.println("Stoped");
         start = false;
@@ -230,6 +163,15 @@ public class MachineLearning extends JPanel {
         }
     }
     
+    public static void setPoints(Point point) {
+        points.add(point);
+    }
+
+    public static void debugLines(int x, int y) {
+        //graphics.resetLine();
+        //graphics.drawLine(x, y, x, y, Color.RED);
+    }
+    
     public static void main(String[] args) {
         gui.Setup();
         Setup();
@@ -245,5 +187,15 @@ public class MachineLearning extends JPanel {
             networks[i].randomiseNetwork();
         }
         FileManager.fileSetup();
+    }
+
+    public static int[] getCube() {
+        int[] result = {object.getPlayerPos().x, object.getPlayerPos().y, object.getPlayerSize(), object.getPlayerSize()}; 
+        return result;
+    }
+
+    public static int[][] getPolygon() {
+        int[][] result = {polygonX, polygonY}; 
+        return result;
     }
 }

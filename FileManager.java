@@ -129,7 +129,7 @@ public class FileManager {
         JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(version);
         fc.setDialogTitle(dialog);
-        int returnVal = fc.showOpenDialog(gui.getFrame());
+        int returnVal = fc.showOpenDialog(fc);
         File file = fc.getSelectedFile();
         String[] data = new String[0];
         if (returnVal == 0) {

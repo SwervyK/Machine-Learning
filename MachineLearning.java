@@ -17,7 +17,7 @@ public class MachineLearning {
     static boolean start = false;
     static double clockSpeed = 20;
     static boolean multiNetwork = false;
-    static boolean ai = true;
+    static boolean ai = false;
     
     // classes
     static NeuralNetwork nn = new NeuralNetwork(5, 7, 5, (int)Math.random() * 100);

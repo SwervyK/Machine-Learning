@@ -16,13 +16,13 @@ public class Object {
     private ArrayList<Double> directionGraph = new ArrayList<Double>(); 
     
     public Object() { }
-
+    
     public Object(int StartX, int StartY) {
         playerStart = new Point(StartX, StartY);
         playerX = StartX;
         playerY = StartY;
     }
-
+    
     /**
     Gets forward directions of object 0-5
     @return the distances to objects of the network 0-5
@@ -182,6 +182,9 @@ public class Object {
     }
     
     public ArrayList<Double> getDirectionGraph() {
+        for (int i = 0; i < directionGraph.size(); i++) {
+            System.out.println(directionGraph.get(i));
+        }
         return directionGraph;
     }
     

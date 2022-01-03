@@ -17,7 +17,7 @@ public class MachineLearning {
     static boolean start = false;
     static double clockSpeed = 20;
     static boolean multiNetwork = false;
-    static boolean ai = false;
+    static boolean ai = true;
     
     // classes
     static NeuralNetwork nn = new NeuralNetwork(5, 7, 5, (int)Math.random() * 100);
@@ -28,6 +28,8 @@ public class MachineLearning {
     
     public static void Update() {
         UpdatePolygon(reset);
+        gui.MakeGraph(150, 200, axesLength, object.getDirectionGraph(), Color.RED, 7);
+        gui.MakeGraph(150, 200, axesLength, nn.errorGraph, Color.GREEN, 1);
         gui.drawPolygon(polygonX, polygonY, Color.BLACK);
         if (start) {
             if (!multiNetwork) {
@@ -43,8 +45,7 @@ public class MachineLearning {
             MoveObject(object, nn, true);
         }
         reset = false;
-        gui.MakeGraph(150, 200, axesLength, object.getDirectionGraph(), Color.RED, 7);
-        gui.MakeGraph(150, 200, axesLength, nn.errorGraph, Color.GREEN, 1);
+
         try {
             Thread.sleep((long)clockSpeed);
         } catch (Exception e) {

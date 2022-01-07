@@ -79,10 +79,17 @@ public class NeuralNetwork {
         int chosenDirection = findDirection(answer, o);
         if (errorGraph.size() >= MachineLearning.axesLength) {
             errorGraph.remove(0);
-            errorGraph.add(totalError/(currentItteration + 1));
+            errorGraph.add(totalError); //old errorGraph.add(totalError/(currentItteration + 1));
         } else {
-            errorGraph.add(totalError/(currentItteration + 1));
+            errorGraph.add(totalError); // old errorGraph.add(totalError/(currentItteration + 1));
         }
+        if (errorGraph.size() >= MachineLearning.axesLength) {
+            errorGraph.remove(0);
+            errorGraph.add(totalError);
+        } else {
+            errorGraph.add(totalError);
+        }
+        /*
         if (currentItteration >= numItterations) {
             totalError /= numItterations;
             if (errorGraph.size() >= MachineLearning.axesLength) {
@@ -95,6 +102,8 @@ public class NeuralNetwork {
             currentItteration = 0;
         }
         currentItteration++;
+        */
+        aiLearn();
         return chosenDirection;
     }
     

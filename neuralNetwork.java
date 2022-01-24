@@ -252,6 +252,7 @@ public class NeuralNetwork {
         x = input;
         hidden = a1f();
         out = result = a2f();
+        totalError = 0f; // TODO check if this works
         for (int i = 0; i < a2f().length; i++) {
             for (int j = 0; j < answer.length; j++) {
                 answer[j] = getBetterAnswer(input)[j][0];

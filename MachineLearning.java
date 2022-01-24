@@ -169,8 +169,7 @@ public class MachineLearning {
     }
 
     public static void debugLines(int x, int y) {
-        //graphics.resetLine();
-        //graphics.drawLine(x, y, x, y, Color.RED);
+        //gui.drawLine(x, y, x, y, Color.RED);
     }
     
     public static void main(String[] args) {

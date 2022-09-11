@@ -111,41 +111,27 @@ public class NeuralNetwork {
     Changes the ai's values to make the prediction more accurate
     */
     private void aiLearn() {
-        int outLayer1 = a2f().length;
-        int outLayer2 = hidden.length;
-        double[][] EtotalYFinal = new double[outLayer1][outLayer2]; 
-        double[][] YFinalY = new double[outLayer1][outLayer2]; 
-        double[][] YW = new double[outLayer1][outLayer2]; 
-        double[][] EtotalW = new double[outLayer1][outLayer2]; 
-        
+        // out
+        double[][] origw2 = w2.clone();
         for (int i = 0; i < hidden.length; i++) {
             for (int j = 0; j < a2f().length; j++) {
-                EtotalYFinal[j][i] = -(answer[j] - a2f()[j][0]);
-                YFinalY[j][i] = a2f()[j][0] * (1 - a2f()[j][0]); //(8)
-                YW[j][i] = a1f()[i][0];
-                EtotalW[j][i] = EtotalYFinal[j][i] * YFinalY[j][i] * YW[j][i];
-                w2[j][i] = w2[j][i] - learninRate * EtotalW[j][i];
+                double EtotalYFinal = -(answer[j] - a2f()[j][0]);
+                double YFinalY = a2f()[j][0] * (1 - a2f()[j][0]); //(8)
+                double YW = a1f()[i][0];
+                double EtotalW = EtotalYFinal * YFinalY * YW;
+                w2[j][i] = w2[j][i] - learninRate * EtotalW;
             }
         }
         //hidden layer
-        int hiddenLayer1 = hidden.length;
-        int hiddenLayer2 = x.length;
-        double[][] EY = new double[hiddenLayer1][hiddenLayer2];
-        double[][] EHF = new double[hiddenLayer1][hiddenLayer2];
-        double[][] EtotalHFinal = new double[hiddenLayer1][hiddenLayer2]; 
-        double[][] HFinalH = new double[hiddenLayer1][hiddenLayer2];
-        double[][] HW = new double[hiddenLayer1][hiddenLayer2];
-        double[][] EtotalWH = new double[hiddenLayer1][hiddenLayer2];
-        
         for (int i = 0; i < x.length; i++) {
             for (int j = 0; j < hidden.length; j++) {
-                EY[j][i] = -(answer[i] - a2f()[i][0]) * a2f()[i][0] * (1 - a2f()[i][0]);
-                EHF[j][i] = EY[j][i] * w1[j][i];
-                EtotalHFinal[j][i] += EHF[j][i];
-                HFinalH[j][i] = a1f()[j][0] * (1 - a1f()[j][0]);
-                HW[j][i] = x[i][0];
-                EtotalWH[j][i] = EtotalHFinal[j][i] * HFinalH[j][i] * HW[j][i];
-                w1[j][i] = w1[j][i] - learninRate * EtotalWH[j][i];
+                double E1H1 = (2 * (0.5 * (answer[0] - out[0][0])) * -1 * (out[0][0] * (1 - out[0][0]))) * origw2[0][i];
+                double E2H1 = (2 * (0.5 * (answer[1] - out[1][0])) * -1 * (out[1][0] * (1 - out[1][0]))) * origw2[1][i];
+                double EtotalHFinal = E1H1 + E2H1;
+                double HFinalH = a1f()[j][0] * (1 - a1f()[j][0]);
+                double HW = x[i][0];
+                double EtotalWH = EtotalHFinal * HFinalH * HW;
+                w1[j][i] = w1[j][i] - learninRate * EtotalWH;
             }
         }
     }

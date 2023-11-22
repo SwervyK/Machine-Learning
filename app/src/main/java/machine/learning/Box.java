@@ -1,26 +1,29 @@
+package machine.learning;
+
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.List;
 import java.awt.*;
 
-public class Object {
+public class Box {
     
     // data
     private boolean debug = true;
     private int playerSize = 10;
-    private int playerX = 100;
-    private int playerY = 150;
+    // private int playerPosition.x = 100;
+    // private int playerPosition.y = 150;
     private Point playerStart = new Point(100, 150);
+    private Point playerPosition = new Point(100, 150);
     private int rayLength = 100;
     private int direction = 0;
     private int oldDirection = 0;
-    private ArrayList<Double> directionGraph = new ArrayList<Double>(); 
+    private ArrayList<Double> directionGraph = new ArrayList<>(); 
     
-    public Object() { }
+    public Box() { }
     
-    public Object(int StartX, int StartY) {
-        playerStart = new Point(StartX, StartY);
-        playerX = StartX;
-        playerY = StartY;
+    public Box(int startX, int startY) {
+        playerStart = new Point(startX, startY);
+        playerPosition = playerStart;
     }
     
     /**
@@ -29,7 +32,7 @@ public class Object {
     */
     public double[][] getDirections(int[] polygonX, int[] polygonY, NeuralNetwork nn) {
         double[][] result = new double[nn.getOutNodes()][1];
-        int currentDirection = direction;
+        int currentDirection;
         for (int i = -2; i <= 2; i++) {
             currentDirection = direction;
             currentDirection += i;
@@ -39,7 +42,7 @@ public class Object {
             if (currentDirection > 7) {
                 currentDirection -= 8;
             }
-            result[i + 2][0] = getColissionDistance(currentDirection, polygonX, polygonY);
+            result[i + 2][0] = getCollisionDistance(currentDirection, polygonX, polygonY);
         }
         return result;
     }
@@ -53,7 +56,7 @@ public class Object {
             currentDirection -= 8;
         }
         
-        //System.out.print("Currend Dir: " + currentDirection + " :Dir: " + direction + " :Old: " + oldDirection + " :Result(Current - Old): ");
+        //System.out.print("Current Dir: " + currentDirection + " :Dir: " + direction + " :Old: " + oldDirection + " :Result(Current - Old): ");
         //System.out.println(Math.abs(currentDirection-oldDirection));
         
         if (Math.abs(currentDirection-oldDirection)>=2) {
@@ -62,7 +65,7 @@ public class Object {
         return currentDirection;
     }
     
-    private Point getColissionPoint(int d, boolean distance, int[] polygonX, int[] polygonY) {
+    private Point getCollisionPoint(int d, boolean distance, int[] polygonX, int[] polygonY) {
         Point[] ray = getRay(d);
         Point point = ray[0]; //getRay(d)[0];
         Point value = ray[1]; //getRay(d)[1];
@@ -71,58 +74,58 @@ public class Object {
         int i = 0;
         double length = rayLength;//(d % 2 == 0) ? rayLength : rayLength / Math.sqrt(2);
         do {
-            x += (double)value.x * ((d % 2 == 0) ? 1 : Math.sqrt(2)/2); // old: +=value.x
-            y += (double)value.y * ((d % 2 == 0) ? 1 : Math.sqrt(2)/2); // old: +=value.y
+            x += value.x * ((d % 2 == 0) ? 1 : Math.sqrt(2)/2); // old: +=value.x
+            y += value.y * ((d % 2 == 0) ? 1 : Math.sqrt(2)/2); // old: +=value.y
             i++;
             if (debug) {
-                MachineLearning.debugLines((int)x, (int)y);
+                UserInterface.debugLines((int)x, (int)y);
             }
         }
-        while(!getColiding((int)x, (int)y, polygonX, polygonY) && i < length);
+        while(!getColliding((int)x, (int)y, polygonX, polygonY) && i < length);
         return (distance) ? new Point(i, i) : new Point(Math.abs((int)x - point.x), Math.abs((int)y - point.y));
     }
     
-    private boolean getColiding(int x, int y, int[] polygonX, int[] polygonY) {
+    private boolean getColliding(int x, int y, int[] polygonX, int[] polygonY) {
         return new Polygon(polygonX, polygonY, polygonX.length).contains(x, y);
     }
     
-    private int getColissionDistance(int d, int[] polygonX, int[] polygonY) {
-        return getColissionPoint(d, true, polygonX, polygonY).x;
+    private int getCollisionDistance(int d, int[] polygonX, int[] polygonY) {
+        return getCollisionPoint(d, true, polygonX, polygonY).x;
     }
     
     public Point[] getRay(int d) {
         Point[] point = new Point[2];
         switch(d) {
             case 2:
-            point[0] = new Point(playerX, playerY); //playerX + playerSize, playerY + playerSize/2
+            point[0] = new Point(playerPosition.x, playerPosition.y); //playerPosition.x + playerSize, playerPosition.y + playerSize/2
             point[1] = new Point(1, 0);
             return point;
             case 6:
-            point[0] = new Point(playerX, playerY); //playerX, playerY + playerSize/2
+            point[0] = new Point(playerPosition.x, playerPosition.y); //playerPosition.x, playerPosition.y + playerSize/2
             point[1] = new Point(-1, 0);
             return point;
             case 1:
-            point[0] = new Point(playerX, playerY); //playerX + playerSize, playerY
+            point[0] = new Point(playerPosition.x, playerPosition.y); //playerPosition.x + playerSize, playerPosition.y
             point[1] = new Point(1, -1);
             return point;
             case 7:
-            point[0] = new Point(playerX, playerY); //playerX, playerY
+            point[0] = new Point(playerPosition.x, playerPosition.y); //playerPosition.x, playerPosition.y
             point[1] = new Point(-1, -1);
             return point;
             case 0:
-            point[0] = new Point(playerX, playerY); //playerX + playerSize/2, playerY
+            point[0] = new Point(playerPosition.x, playerPosition.y); //playerPosition.x + playerSize/2, playerPosition.y
             point[1] = new Point(0, -1);
             return point;
             case 3:
-            point[0] = new Point(playerX, playerY); //playerX + playerSize, playerY + playerSize
+            point[0] = new Point(playerPosition.x, playerPosition.y); //playerPosition.x + playerSize, playerPosition.y + playerSize
             point[1] = new Point(1, 1);
             return point;
             case 5:
-            point[0] = new Point(playerX, playerY); //playerX, playerY + playerSize
+            point[0] = new Point(playerPosition.x, playerPosition.y); //playerPosition.x, playerPosition.y + playerSize
             point[1] = new Point(-1, 1);
             return point;
             case 4:
-            point[0] = new Point(playerX, playerY); //playerX + playerSize/2, playerY + playerSize
+            point[0] = new Point(playerPosition.x, playerPosition.y); //playerPosition.x + playerSize/2, playerPosition.y + playerSize
             point[1] = new Point(0, 1);
             return point;
             default:
@@ -132,11 +135,11 @@ public class Object {
         return point;
     }
     
-    public Point Move(Point p, int[] polygonX, int[] polygonY) {
+    public Point move(Point p, int[] polygonX, int[] polygonY) {
         if (p == null) {
             return new Point(0 ,0);
         }
-        return Move(p.x, p.y, polygonX, polygonY);
+        return move(p.x, p.y, polygonX, polygonY);
     }
     
     /**
@@ -144,44 +147,42 @@ public class Object {
     @param x x value to move
     @param y y value to move
     */
-    public Point Move(int x, int y, int[] polygonX, int[] polygonY) {
+    public Point move(int x, int y, int[] polygonX, int[] polygonY) {
         oldDirection = direction;
-        direction = (((int)Math.toDegrees(Math.atan2(((y + playerY)-playerY),((x + playerX)-playerX))/45)) + 2);
+        direction = (((int)Math.toDegrees(Math.atan2(((y + playerPosition.y)-playerPosition.y),((x + playerPosition.x)-playerPosition.x))/45)) + 2);
         direction = (direction < 0) ? direction + 8 : direction;
-        if (directionGraph.size() >= MachineLearning.axesLength) {
+        if (directionGraph.size() >= UserInterface.AXES_LENGTH) {
             directionGraph.remove(0);
             directionGraph.add(Double.valueOf(direction));
         } else {
             directionGraph.add(Double.valueOf(direction));
         }
-        if (getColiding(playerX + x + playerSize/2, playerY + y + playerSize/2, polygonX, polygonY)) {
-            Die();
+        if (getColliding(playerPosition.x + x + playerSize/2, playerPosition.y + y + playerSize/2, polygonX, polygonY)) {
+            die();
             return new Point(0, 0);
         }
         else {
-            playerX += x; 
-            playerY += y;
+            playerPosition.translate(x, y);
         }
-        return new Point(playerX, playerY);
+        return new Point(playerPosition.x, playerPosition.y);
     }
     
-    public void Reset() {
-        playerX = playerStart.x;
-        playerY = playerStart.y;
+    public void reset() {
+        playerPosition = playerStart;
         direction = 0;
-        directionGraph = new ArrayList<Double>();
+        directionGraph = new ArrayList<>();
     }
     
-    private void Die() {
-        Reset();
+    private void die() {
+        reset();
         //TODO
     }
     
     public Point getPlayerPos() {
-        return new Point(playerX, playerY);
+        return new Point(playerPosition.x, playerPosition.y);
     }
     
-    public ArrayList<Double> getDirectionGraph() {
+    public List<Double> getDirectionGraph() {
         for (int i = 0; i < directionGraph.size(); i++) {
             System.out.println(directionGraph.get(i));
         }

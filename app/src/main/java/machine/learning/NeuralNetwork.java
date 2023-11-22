@@ -1,3 +1,5 @@
+package machine.learning;
+
 import java.util.Arrays;
 import java.util.Random;
 import java.util.ArrayList;
@@ -8,16 +10,16 @@ public class NeuralNetwork {
     private double totalError = 0.0;
     private int seed;
     private Random random = new Random();
-    private double learninRate = 0.5;
+    private double learningRate = 0.5;
     private int kNumXNodes = 5;
     private int kNumHiddenNodes = 3;
     private int kNumOutNodes = 5;
-    private int numItterations = 5;
-    private int currentItteration = 0;
-    private int treshold = 20;
+    // private int numIterations = 5;
+    // private int currentIteration = 0;
+    private int threshold = 20;
     
     // neural network 
-    double[][] x = new double[5][1];
+    double[][] in = new double[5][1];
     double[][] w1 = new double[3][5];
     double[][] b1 = new double[3][1];
     double[][] hidden = new double[3][1];
@@ -28,7 +30,7 @@ public class NeuralNetwork {
     double[] w = new double[(w1.length * w1[0].length) + (w2.length * w2[0].length)];
     double[] b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
     double[] error = new double[out.length];
-    ArrayList<Double> errorGraph = new ArrayList<Double>();
+    ArrayList<Double> errorGraph = new ArrayList<>();
     double[] answer = new double[out.length];
     
     public NeuralNetwork(int s) { seed = s; }
@@ -37,7 +39,7 @@ public class NeuralNetwork {
         kNumXNodes = xNodes;
         kNumHiddenNodes = hiddenNodes;
         kNumOutNodes = outNodes;
-        x = new double[xNodes][1];
+        in = new double[xNodes][1];
         w1 = new double[hiddenNodes][xNodes];
         b1 = new double[hiddenNodes][1];
         hidden = new double[hiddenNodes][1];
@@ -50,48 +52,48 @@ public class NeuralNetwork {
         error = new double[out.length];
         answer = new double[out.length];
         
-        s = seed;
+        seed = s;
     }
     
     /**
-    Randomises all w and b values in the network
+    Randomizes all w and b values in the network
     */
-    public void randomiseNetwork() {
-        randomiseMatrices(w1);
-        randomiseMatrices(b1);
-        randomiseMatrices(w2);
-        randomiseMatrices(b2);
+    public void randomizeNetwork() {
+        randomizeMatrices(w1);
+        randomizeMatrices(b1);
+        randomizeMatrices(w2);
+        randomizeMatrices(b2);
     }
-    //TODO aireset()
+    //TODO aiReset()
     /**
     Updates ai
-    @param inputs: values to passinto the network
+    @param inputs: values to passings the network
     @return the direction the network wants to go in 0-5
     **/
-    public int aiUpdate(double[][] inputs, boolean wantAi, Object o) {
-        double[][] answer = {{0},{0},{0},{0},{0}};
+    public int aiUpdate(double[][] inputs, boolean wantAi, Box o) {
+        double[][] aiAnswer;
         if (wantAi) {
-            answer = calculateMatrices(inputs);
+            aiAnswer = calculateMatrices(inputs);
         }
         else {
-            answer = getBetterAnswer(inputs);
+            aiAnswer = getBetterAnswer(inputs);
         }
-        int chosenDirection = findDirection(answer, o);
-        if (errorGraph.size() >= MachineLearning.axesLength) {
+        int chosenDirection = findDirection(aiAnswer, o);
+        if (errorGraph.size() >= UserInterface.AXES_LENGTH) {
             errorGraph.remove(0);
-            errorGraph.add(totalError); //old errorGraph.add(totalError/(currentItteration + 1));
+            errorGraph.add(totalError); //old errorGraph.add(totalError/(currentIteration + 1));
         } else {
-            errorGraph.add(totalError); // old errorGraph.add(totalError/(currentItteration + 1));
+            errorGraph.add(totalError); // old errorGraph.add(totalError/(currentIteration + 1));
         }
-        if (errorGraph.size() >= MachineLearning.axesLength) {
+        if (errorGraph.size() >= UserInterface.AXES_LENGTH) {
             errorGraph.remove(0);
             errorGraph.add(totalError);
         } else {
             errorGraph.add(totalError);
         }
         /*
-        if (currentItteration >= numItterations) {
-            totalError /= numItterations;
+        if (currentIteration >= numIterations) {
+            totalError /= numIterations;
             if (errorGraph.size() >= MachineLearning.axesLength) {
                 errorGraph.remove(0);
                 errorGraph.add(totalError);
@@ -99,9 +101,9 @@ public class NeuralNetwork {
                 errorGraph.add(totalError);
             }
             aiLearn();
-            currentItteration = 0;
+            currentIteration = 0;
         }
-        currentItteration++;
+        currentIteration++;
         */
         aiLearn();
         return chosenDirection;
@@ -112,26 +114,26 @@ public class NeuralNetwork {
     */
     private void aiLearn() {
         // out
-        double[][] origw2 = w2.clone();
+        double[][] origW2 = w2.clone();
         for (int i = 0; i < hidden.length; i++) {
             for (int j = 0; j < a2f().length; j++) {
-                double EtotalYFinal = -(answer[j] - a2f()[j][0]);
-                double YFinalY = a2f()[j][0] * (1 - a2f()[j][0]); //(8)
-                double YW = a1f()[i][0];
-                double EtotalW = EtotalYFinal * YFinalY * YW;
-                w2[j][i] = w2[j][i] - learninRate * EtotalW;
+                double eTotalYFinal = -(answer[j] - a2f()[j][0]);
+                double yFinalY = a2f()[j][0] * (1 - a2f()[j][0]); //(8)
+                double yw = a1f()[i][0];
+                double eTotalW = eTotalYFinal * yFinalY * yw;
+                w2[j][i] = w2[j][i] - learningRate * eTotalW;
             }
         }
         //hidden layer
-        for (int i = 0; i < x.length; i++) {
+        for (int i = 0; i < in.length; i++) {
             for (int j = 0; j < hidden.length; j++) {
-                double E1H1 = (2 * (0.5 * (answer[0] - out[0][0])) * -1 * (out[0][0] * (1 - out[0][0]))) * origw2[0][i];
-                double E2H1 = (2 * (0.5 * (answer[1] - out[1][0])) * -1 * (out[1][0] * (1 - out[1][0]))) * origw2[1][i];
-                double EtotalHFinal = E1H1 + E2H1;
-                double HFinalH = a1f()[j][0] * (1 - a1f()[j][0]);
-                double HW = x[i][0];
-                double EtotalWH = EtotalHFinal * HFinalH * HW;
-                w1[j][i] = w1[j][i] - learninRate * EtotalWH;
+                double e1H1 = (2 * (0.5 * (answer[0] - out[0][0])) * -1 * (out[0][0] * (1 - out[0][0]))) * origW2[0][i];
+                double e2H1 = (2 * (0.5 * (answer[1] - out[1][0])) * -1 * (out[1][0] * (1 - out[1][0]))) * origW2[1][i];
+                double eTotalHFinal = e1H1 + e2H1;
+                double hFinalH = a1f()[j][0] * (1 - a1f()[j][0]);
+                double hw = in[i][0];
+                double eTotalWH = eTotalHFinal * hFinalH * hw;
+                w1[j][i] = w1[j][i] - learningRate * eTotalWH;
             }
         }
     }
@@ -181,7 +183,7 @@ public class NeuralNetwork {
     
     // 1st laver a vales
     private double[][] a1f() {
-        double[][] result = multiplyMatrices(w1, x);
+        double[][] result = multiplyMatrices(w1, in);
         result = f(addMatrices(result, b1));
         return result;
     }
@@ -200,7 +202,7 @@ public class NeuralNetwork {
         return result;
     }
     
-    // mutilpy matrices
+    // multiply matrices
     private double[][] multiplyMatrices(double[][] firstMatrix, double[][] secondMatrix) {
         double[][] result = new double[firstMatrix.length][secondMatrix[0].length];
         for (int row = 0; row < result.length; row++) {
@@ -223,19 +225,21 @@ public class NeuralNetwork {
     // add matrices
     private double[][] addMatrices(double[][] firstMatrix, double[][] secondMatrix)
     {
-        double result[][] = new double[secondMatrix.length][secondMatrix[0].length];
+        double[][] result = new double[secondMatrix.length][secondMatrix[0].length];
         
-        for (int row = 0; row < secondMatrix.length; row++)
-        for (int col = 0; col < secondMatrix[0].length; col++)
-        result[row][col] = firstMatrix[row][col] + secondMatrix[row][col];
+        for (int row = 0; row < secondMatrix.length; row++) {
+            for (int col = 0; col < secondMatrix[0].length; col++) {
+                result[row][col] = firstMatrix[row][col] + secondMatrix[row][col];
+            }
+        }
         
         return result;
     }
     
     // find the hidden layer values, the output values, and the total error
     private double[][] calculateMatrices(double[][] input) {
-        double result[][] = new double[a2f().length][a2f()[0].length];
-        x = input;
+        double[][] result;
+        in = input;
         hidden = a1f();
         out = result = a2f();
         totalError = 0f; // TODO check if this works
@@ -250,9 +254,10 @@ public class NeuralNetwork {
     }
     
     // finds longest input
-    private int findDirection(double[][] in, Object o) {
+    private int findDirection(double[][] in, Box o) {
         int result = 0;
-        double oldValue = 0.0, value = 0.0;
+        double oldValue = 0.0;
+        double value;
         for (int row = 0; row < in.length; row++) {
             for (int col = 0; col < in[row].length; col++) {
                 value = in[row][col];
@@ -302,7 +307,7 @@ public class NeuralNetwork {
         double old = 0.0;
         for (int i = 0; i < values.length; i++) {
             if (values[i][0] > old) {
-                if (((i!=0)?values[i-1][0]<treshold:false) || ((i!=values.length-1)?values[i+1][0]<treshold:false)) {
+                if (((i!=0)&&values[i-1][0]<threshold) || ((i!=values.length-1)&&values[i+1][0]<threshold)) {
                     continue;
                 }
                 index = i;
@@ -326,12 +331,13 @@ public class NeuralNetwork {
     */
     public static void print2D(double[][] mat)
     {
-        for (double[] row : mat)
-        System.out.println(Arrays.toString(row));
+        for (double[] row : mat) {
+            System.out.println(Arrays.toString(row));
+        }
     }
     
-    // randomises a 2d array
-    private void randomiseMatrices(double[][] in) {
+    // randomizes a 2d array
+    private void randomizeMatrices(double[][] in) {
         random.setSeed(seed);
         for (int row = 0; row < in.length; row++) {
             for (int col = 0; col < in[row].length; col++) {
@@ -353,8 +359,8 @@ public class NeuralNetwork {
         return result;
     }
     
-    public void Reset() {
-        x = new double[kNumXNodes][1];
+    public void reset() {
+        in = new double[kNumXNodes][1];
         w1 = new double[kNumHiddenNodes][kNumXNodes];
         b1 = new double[kNumHiddenNodes][1];
         hidden = new double[kNumHiddenNodes][1];
@@ -366,9 +372,9 @@ public class NeuralNetwork {
         b = new double[(b1.length * b1[0].length) + (b2.length * b2[0].length)];
         error = new double[out.length];
         answer = new double[out.length];
-        errorGraph = new ArrayList<Double>();
+        errorGraph = new ArrayList<>();
         
-        currentItteration = 0;
+        // currentIteration = 0;
         totalError = 0.0;
     }
 

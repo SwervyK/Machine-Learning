@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "UserInterface",
+            "request": "launch",
+            "mainClass": "machine.learning.UserInterface",
+            "projectName": "app"
+        },
+        {
+            "type": "java",
+            "name": "MachineLearning",
+            "request": "launch",
+            "mainClass": "machine.learning.MachineLearning",
+            "projectName": "app"
+        },
+        {
+            "type": "java",
             "name": "Launch MachineLearning",
             "request": "launch",
             "mainClass": "MachineLearning",

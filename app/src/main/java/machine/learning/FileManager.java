@@ -1,83 +1,87 @@
+package machine.learning;
+
 import java.awt.Point;
 import javax.swing.JFileChooser;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 public class FileManager {
     // saving/files
     private static int currentVersion = 0;
     private static String currentDir = System.getProperty("user.dir");
     private static File version = new File(currentDir, "logs\\version.txt");
-    private static File polygonSave;
-    private static File wSave;
-    private static File bSave;
+
+    private FileManager() { }
     
     public static void fileSetup() {
         try {
             if (!version.exists()) {
                 version.createNewFile();
             }
-            Scanner scanner = new Scanner(version);
-            String nextLn = scanner.nextLine();
-            if (!nextLn.equals("0")) {
-                currentVersion = Integer.parseInt(nextLn);
+            try (Scanner scanner = new Scanner(version)) {
+                String nextLn = scanner.nextLine();
+                if (!nextLn.equals("0")) {
+                    currentVersion = Integer.parseInt(nextLn);
+                }
+                else {
+                    currentVersion = 0;
+                }
             }
-            else {
-                currentVersion = 0;
+            try (FileWriter writer = new FileWriter(version)) {
+                writer.write(String.valueOf((currentVersion + 1)));
             }
-            FileWriter writer = new FileWriter(version);
-            writer.write(String.valueOf((currentVersion + 1)));
-            writer.close();
-            scanner.close();
         }
-        catch (Exception e) {
+        catch (IOException e) {
             e.printStackTrace();
         }
         
     }
     
     private static void writeData(String data, File file) {
-        try  {
-            FileWriter writer = new FileWriter(file);
+        try (FileWriter writer = new FileWriter(file)) {
             writer.write(data);
-            writer.close();
         }
-        catch (Exception e) {
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
     
     private static void writeData(String[] dataArr, File file) {
-        String data = "";
+        StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < dataArr.length; i++) {
-            data += (dataArr[i] + "\n");
+            stringBuilder.append(dataArr[i] + "\n");
         }
-        writeData(data, file);
+        writeData(stringBuilder.toString(), file);
     }
     
     private static String[] readData(File file) {
         String[] result = new String[0];
-        try {
-            result = new String[(int)Files.lines(file.toPath()).count()];
-            Scanner scanner = new Scanner(file);
+        try (Stream<String> stream = Files.lines(file.toPath())) {
+            result = new String[(int)stream.count()];
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        try (Scanner scanner = new Scanner(file)) {
             int index = 0;
             while (scanner.hasNextLine()) {
                 result[index] = scanner.nextLine();
                 index++;
             }
-            scanner.close();
         }
-        catch (Exception e) {
+        catch (IOException e) {
             e.printStackTrace();
         }
         return result;
     }
     
-    public static void PolygonSave(List<Point> points) {
-        polygonSave = new File(currentDir, "logs\\polygonData" + currentVersion + ".txt");
+    public static void polygonSave(List<Point> points) {
+        File polygonSave = new File(currentDir, "logs\\polygonData" + currentVersion + ".txt");
         try {
             if (!polygonSave.exists()) {
                 polygonSave.createNewFile();
@@ -93,8 +97,8 @@ public class FileManager {
         writeData(polygonPoints, polygonSave);
     }
     
-    public static void SaveingBrain(double[] w, double[] b) {
-        wSave = new File(currentDir, "logs\\weights" + currentVersion + ".txt");
+    public static void savingBrain(double[] w, double[] b) {
+        File wSave = new File(currentDir, "logs\\weights" + currentVersion + ".txt");
         try {
             if (!wSave.exists()) {
                 wSave.createNewFile();
@@ -109,7 +113,7 @@ public class FileManager {
         }
         writeData(weights, wSave);
         
-        bSave = new File(currentDir, "logs\\biases" + currentVersion + ".txt");
+        File bSave = new File(currentDir, "logs\\biases" + currentVersion + ".txt");
         try {
             if (!bSave.exists()) {
                 bSave.createNewFile();
@@ -125,7 +129,7 @@ public class FileManager {
         writeData(biases, bSave);
     }
     
-    public static String[] FileLoading(String dialog) {
+    public static String[] fileLoading(String dialog) {
         JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(version);
         fc.setDialogTitle(dialog);
@@ -133,24 +137,24 @@ public class FileManager {
         File file = fc.getSelectedFile();
         String[] data = new String[0];
         if (returnVal == 0) {
-            try {
-                data = new String[(int)Files.lines(file.toPath()).count()];
-                data =  readData(file);
+            try (Stream<String> stream = Files.lines(file.toPath())) {
+                data = new String[(int)stream.count()]; // TODO is this needed
+                data = readData(file);
             }
-            catch (Exception e) {
+            catch (IOException e) {
                 e.printStackTrace();
             }
         }
         return data;
     }
     
-    public static double[][][] LoadBrain(int x, int h, int y) {
-        String[] w = FileLoading("Weights values");
+    public static double[][][] loadBrain(int x, int h, int y) {
+        String[] w = fileLoading("Weights values");
         double[] wDouble = new double[w.length];
         for (int i = 0; i < wDouble.length; i++) {
             wDouble[i] = Double.parseDouble(w[i]);
         }
-        String[] b = FileLoading("Bias values");
+        String[] b = fileLoading("Bias values");
         double[] bDouble = new double[b.length];
         for (int i = 0; i < bDouble.length; i++) {
             bDouble[i] = Double.parseDouble(b[i]);
@@ -177,7 +181,7 @@ public class FileManager {
         
         int bIndex = 0;
         for (int i = 0; i < b1.length; i++) {
-            for (int j = 0; i < b1[0].length; i++) {
+            for (int j = 0; j < b1[0].length; j++) {
                 b1[i][j] = bDouble[bIndex];
                 bIndex++;
             }
@@ -188,7 +192,7 @@ public class FileManager {
                 bIndex++;
             }
         }
-        double[][][] result = {w1, w2, b1, b2};
-        return result;
+
+        return new double[][][] {w1, w2, b1, b2};
     }
 }

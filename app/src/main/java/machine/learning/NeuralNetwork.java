@@ -1,6 +1,5 @@
 package machine.learning;
 
-import java.util.Arrays;
 import java.util.Random;
 import java.util.ArrayList;
 
@@ -14,8 +13,6 @@ public class NeuralNetwork {
     private int kNumXNodes = 5;
     private int kNumHiddenNodes = 3;
     private int kNumOutNodes = 5;
-    // private int numIterations = 5;
-    // private int currentIteration = 0;
     private int threshold = 20;
     
     // neural network 
@@ -65,12 +62,13 @@ public class NeuralNetwork {
         randomizeMatrices(b2);
     }
     //TODO aiReset()
+
     /**
     Updates ai
     @param inputs: values to passings the network
     @return the direction the network wants to go in 0-5
     **/
-    public int aiUpdate(double[][] inputs, boolean wantAi, Box o) {
+    public int aiUpdate(double[][] inputs, boolean wantAi, Box box) {
         double[][] aiAnswer;
         if (wantAi) {
             aiAnswer = calculateMatrices(inputs);
@@ -78,33 +76,12 @@ public class NeuralNetwork {
         else {
             aiAnswer = getBetterAnswer(inputs);
         }
-        int chosenDirection = findDirection(aiAnswer, o);
-        if (errorGraph.size() >= UserInterface.AXES_LENGTH) {
+        int chosenDirection = findDirection(aiAnswer, box);
+        if (errorGraph.size() >= UserInterface.AXES_LENGTH/4) {
             errorGraph.remove(0);
-            errorGraph.add(totalError); //old errorGraph.add(totalError/(currentIteration + 1));
-        } else {
-            errorGraph.add(totalError); // old errorGraph.add(totalError/(currentIteration + 1));
         }
-        if (errorGraph.size() >= UserInterface.AXES_LENGTH) {
-            errorGraph.remove(0);
-            errorGraph.add(totalError);
-        } else {
-            errorGraph.add(totalError);
-        }
-        /*
-        if (currentIteration >= numIterations) {
-            totalError /= numIterations;
-            if (errorGraph.size() >= MachineLearning.axesLength) {
-                errorGraph.remove(0);
-                errorGraph.add(totalError);
-            } else {
-                errorGraph.add(totalError);
-            }
-            aiLearn();
-            currentIteration = 0;
-        }
-        currentIteration++;
-        */
+        errorGraph.add(totalError);
+
         aiLearn();
         return chosenDirection;
     }
@@ -174,26 +151,12 @@ public class NeuralNetwork {
         return b;
     }
     
-    // 1st laver z vales
-    /*
-    private double[][] z1() {
-        double[][] result = multiplyMatrices(w1, x);
-        return result;
-    }*/
-    
     // 1st laver a vales
     private double[][] a1f() {
         double[][] result = multiplyMatrices(w1, in);
         result = f(addMatrices(result, b1));
         return result;
     }
-    
-    // 2nd laver z vales 
-    /*
-    private double[][] z2() {
-        double[][] result = multiplyMatrices(w2, z1());
-        return result;
-    }*/
     
     // 2nd laver a vales
     private double[][] a2f() {
@@ -238,11 +201,10 @@ public class NeuralNetwork {
     
     // find the hidden layer values, the output values, and the total error
     private double[][] calculateMatrices(double[][] input) {
-        double[][] result;
         in = input;
         hidden = a1f();
-        out = result = a2f();
-        totalError = 0f; // TODO check if this works
+        out = a2f();
+        totalError = 0f;
         for (int i = 0; i < a2f().length; i++) {
             for (int j = 0; j < answer.length; j++) {
                 answer[j] = getBetterAnswer(input)[j][0];
@@ -250,68 +212,36 @@ public class NeuralNetwork {
             totalError += error[i] = Math.pow((a2f()[i][0] - answer[i]), 2);
         }
         totalError /= a2f().length;
-        return result;
+        return out;
     }
     
     // finds longest input
-    private int findDirection(double[][] in, Box o) {
+    private int findDirection(double[][] in, Box box) {
         int result = 0;
-        double oldValue = 0.0;
-        double value;
+        double maxValue = 0;
         for (int row = 0; row < in.length; row++) {
-            for (int col = 0; col < in[row].length; col++) {
-                value = in[row][col];
-                if (value > oldValue) {
-                    result =  row;
-                }
-                else {
-                    value = oldValue;
-                }
-                oldValue = value;
+            double value = in[row][0];
+            if (value > maxValue) {
+                result = row;
+                maxValue = value;
             }
         }
-        result -= 2;
-        result = o.getDirection(result);
-        return result;
+        return box.getDirection(result-2);
     }
-    
-    /*
-    private double[][] getAnswer(double[][] directions) { //good
-        double[][] result = new double[out.length][1];
-        int index = 0;
-        double[][] values = directions;
-        double old = 0.0;
-        int i = 0;
-        for (double value[] : values) {
-            if (value[0] > old) {
-                index = i;
-                old = value[0];
-            }
-            i++;
-        }
-        for (int j = 0; j < result.length; j++) {
-            if (j == index) {
-                result[j][0] = 1;
-            }
-            else {
-                result[j][0] = 0;
-            }
-        }
-        return result;
-    } */
     
     private double[][] getBetterAnswer(double[][] directions) {
         double[][] result = new double[out.length][1];
         double[][] values = directions;
         int index = 0;
-        double old = 0.0;
+        double max = 0;
         for (int i = 0; i < values.length; i++) {
-            if (values[i][0] > old) {
-                if (((i!=0)&&values[i-1][0]<threshold) || ((i!=values.length-1)&&values[i+1][0]<threshold)) {
+            if (values[i][0] > max) {
+                // stay away from walls
+                if ((i != 0 && values[i-1][0] < threshold) || (i!=values.length-1 && values[i+1][0] < threshold)) {
                     continue;
                 }
                 index = i;
-                old = values[i][0];
+                max = values[i][0];
             }
         }
         for (int i = 0; i < result.length; i++) {
@@ -323,17 +253,6 @@ public class NeuralNetwork {
             }
         }
         return result;
-    }
-    
-    /**
-    Prints a 2d array
-    @param mat: 2d array to print
-    */
-    public static void print2D(double[][] mat)
-    {
-        for (double[] row : mat) {
-            System.out.println(Arrays.toString(row));
-        }
     }
     
     // randomizes a 2d array

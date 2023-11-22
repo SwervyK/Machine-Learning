@@ -18,7 +18,7 @@ public class FileManager {
 
     private FileManager() { }
     
-    public static void fileSetup() {
+    public static void incrementVersion() {
         try {
             if (!version.exists()) {
                 version.createNewFile();

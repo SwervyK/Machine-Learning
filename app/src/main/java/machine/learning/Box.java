@@ -32,11 +32,9 @@ public class Box {
             currentDirection = direction;
             currentDirection += i;
             if (currentDirection < 0) {
-                System.out.print("1");
                 currentDirection += 8;
             }
             if (currentDirection > 7) {
-                System.out.print("2");
                 currentDirection -= 8;
             }
             result[i + 2][0] = getCollisionDistance(currentDirection, polygonX, polygonY, g);
@@ -47,16 +45,13 @@ public class Box {
     public int getDirection(int d) {
         int currentDirection = direction + d;
         if (currentDirection < 0) {
-            System.out.print("3");
             currentDirection += 8;
         }
         if (currentDirection > 7) {
-            System.out.print("4");
             currentDirection -= 8;
         }
         
         if (Math.abs(currentDirection-oldDirection)>=2) {
-            System.out.print("5");
             return direction;
         }
         return currentDirection;
@@ -88,10 +83,7 @@ public class Box {
     
     public Point[] getRay(int d) {
         Point[] point = new Point[2];
-        point[0] = new Point(playerPosition.x, playerPosition.y); //playerPosition.x + playerSize, playerPosition.y + playerSize/2
-        if (d > 4) {
-            System.out.print("6");
-        }
+        point[0] = new Point(playerPosition.x, playerPosition.y);
         switch(d) {
             case 0:
             point[1] = new Point(0, -1);

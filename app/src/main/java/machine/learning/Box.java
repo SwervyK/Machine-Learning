@@ -18,7 +18,7 @@ public class Box {
     
     public Box(int startX, int startY) {
         playerStart = new Point(startX, startY);
-        playerPosition = playerStart;
+        playerPosition = (Point) playerStart.clone();
     }
     
     /**
@@ -149,9 +149,13 @@ public class Box {
     }
     
     public void reset() {
-        playerPosition = playerStart;
+        playerPosition.setLocation(playerStart.x, playerStart.y);
         direction = 0;
         directionGraph = new ArrayList<>();
+    }
+
+    public Point getPosition() {
+        return playerPosition;
     }
     
     private void die() {

@@ -9,9 +9,9 @@ public class NeuralNetwork {
     private double totalError = 0.0;
     private int seed;
     private Random random = new Random();
-    private double learningRate = 0.5;
+    private double learningRate = 1;
     private int kNumXNodes = 5;
-    private int kNumHiddenNodes = 3;
+    private int kNumHiddenNodes = 7;
     private int kNumOutNodes = 5;
     private int threshold = 20;
     
@@ -69,6 +69,7 @@ public class NeuralNetwork {
     @return the direction the network wants to go in 0-5
     **/
     public int aiUpdate(double[][] inputs, boolean wantAi, Box box) {
+        System.out.println("AI Update");
         double[][] aiAnswer;
         if (wantAi) {
             aiAnswer = calculateMatrices(inputs);
@@ -279,6 +280,7 @@ public class NeuralNetwork {
     }
     
     public void reset() {
+        System.out.println("AI Reset");
         in = new double[kNumXNodes][1];
         w1 = new double[kNumHiddenNodes][kNumXNodes];
         b1 = new double[kNumHiddenNodes][1];

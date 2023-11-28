@@ -30,7 +30,7 @@ public class UserInterface extends JPanel {
     // States
     private boolean hasStarted = false;
     private double clockSpeed = 20;
-    private boolean useAI = false;
+    private boolean useAI = true;
     
     // Classes
     private Random random = new Random();
@@ -99,8 +99,8 @@ public class UserInterface extends JPanel {
         super.paintComponent(g);
 
         // Draw graphs
-        makeGraph(150, 200, AXES_LENGTH, box.getDirectionGraph(), Color.RED, 7, g);
-        makePlainGraph(150, 200, AXES_LENGTH, nn.errorGraph, Color.GREEN, 1, g);
+        makeGraph(100, 400, AXES_LENGTH, box.getDirectionGraph(), Color.RED, 7, g);
+        makePlainGraph(100, 400, AXES_LENGTH, nn.errorGraph, Color.GREEN, 1, g);
         
         // Draw Polygon
         g.setColor(Color.BLACK);
@@ -167,23 +167,31 @@ public class UserInterface extends JPanel {
     
     private void moveObject(Graphics g) {
         double[][] direction = box.getDirections(polygonX, polygonY, nn, g);
-        int chosenDirection = nn.aiUpdate(direction, useAI, box);
-        Point velocity = (hasStarted) ? box.getRay(chosenDirection)[1] : new Point(0,0);
-        Point movePos = box.move(velocity, polygonX, polygonY);
+        Point movePos = box.getPosition();
+        if (hasStarted) {
+            int chosenDirection = nn.aiUpdate(direction, useAI, box);
+            Point velocity = box.getRay(chosenDirection)[1];
+            movePos = box.move(velocity, polygonX, polygonY);
+        }
         g.setColor(Color.BLACK);
         g.fillRect(movePos.x - (box.getPlayerSize()/2), movePos.y - (box.getPlayerSize()/2), box.getPlayerSize(), box.getPlayerSize());
     }
     
     private void updatePolygon() {
-        int i = 0;
-        if (!points.isEmpty()) {
-            polygonX = new int[points.size()];
-            polygonY = new int[points.size()];
-            for (Point point : points) {
-                polygonX[i] = point.x;
-                polygonY[i] = point.y;
-                i++;
+        try {
+            int i = 0;
+            if (!points.isEmpty()) {
+                polygonX = new int[points.size()];
+                polygonY = new int[points.size()];
+                for (Point point : points) {
+                    polygonX[i] = point.x;
+                    polygonY[i] = point.y;
+                    i++;
+                }
             }
+        }
+        catch (Exception e) {
+
         }
     }
     

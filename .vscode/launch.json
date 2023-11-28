@@ -8,6 +8,13 @@
             "type": "java",
             "name": "UserInterface",
             "request": "launch",
+            "mainClass": "app.src.main.java.machine.learning.UserInterface",
+            "projectName": "Machine-Learning_f7ddf83e"
+        },
+        {
+            "type": "java",
+            "name": "UserInterface",
+            "request": "launch",
             "mainClass": "machine.learning.UserInterface",
             "projectName": "app"
         },
